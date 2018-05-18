@@ -1,0 +1,43 @@
+---
+title: "W203 Lab 1: Candidate Dept EDA"
+output: html_document
+author: 
+ - Jon Mease
+ - James De La Torr
+ - Adam Yang
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+This is the introduction...
+
+### State the research question that motivates your analysis.
+
+### Load your data set into R.
+read.csv("dataset/CandidateDebt.csv")
+
+### Describe your data set. What types of variables does it contain? How many observations are there?
+
+### Evaluate the data quality. Are there any issues with the data? Explain how you handled these potential issues.
+
+### Explain whether any data processing or preparation is required for your data set.
+
+
+## Univariate Analysis of Key Variables
+
+Univariate analysis...
+
+## Analysis of Key Relationships
+
+Key relationships...
+
+## Analysis of Secondary Effects ...
+
+Secondary effects...
+
+## Conclusion
+Conclusion...
