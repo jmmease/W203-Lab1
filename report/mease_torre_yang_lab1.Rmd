@@ -18,8 +18,25 @@ This is the introduction...
 ### State the research question that motivates your analysis.
 
 ### Load your data set into R.
-read.csv("dataset/CandidateDebt.csv")
 
+```{r}
+DebtRaw = read.csv("../dataset/CandidateDebtDummy.csv", na.strings='#N/A')
+
+# Split off left table
+DebtLeft = DebtRaw[, seq(9)]
+
+# Split off right table
+DebtRight = DebtRaw[, seq(10, ncol(DebtRaw))]
+
+# Rename DUMMY to office
+colnames(DebtRight)[0] <- 'office'
+
+# Keep cases with at least one non-NA entry
+DebtRightValid <- DebtRight[rowSums(!is.na(DebtRight)) > 0,]
+
+# Drop duplicates
+Debt <- unique(DebtRightValid)
+```
 ### Describe your data set. What types of variables does it contain? How many observations are there?
 
 ### Evaluate the data quality. Are there any issues with the data? Explain how you handled these potential issues.
