@@ -57,7 +57,7 @@ The first bivariate relationship explored was the total expenditure by political
 
 ```{r}
 
-# sum amount by coarsedescription
+# sum amount by party
 amountbyparty <-aggregate(Debt['amount'], by=list(party=Debt$party), FUN=sum)
 
 #format method, which is necessary for formating in a data.frame   
@@ -97,6 +97,10 @@ A pareto of total expenditure by coarsedescription is shown in Figure 10.  The t
 desc_to_coarsedesc = read.csv("../dataset/description_to_coarsedescription.csv", na.strings='#N/A')
 # we need to merge coarsedescription into Debt by description
 Debt2=merge(Debt,desc_to_coarsedesc[c('description','coarsedescription')])
+
+# Put 0 for position when there is no value
+Debt2$position[is.na(Debt2$position)] <- 0
+Debt2$legislativedistrict[is.na(Debt2$legislativedistrict)] <- 0
 
 # sum amount by coarsedescription
 amountbycoarsedesc <-aggregate(Debt2['amount'], by=list(coarsedescription=Debt2$coarsedescription), FUN=sum)
@@ -142,8 +146,7 @@ Figure 12 shows a pareto of fraction of party total expenditure by coarse descri
 names(amountbyparty)[names(amountbyparty)=="amount"] <- "totalamountbyparty"
 
 #rollup debt2 by coarsedesc and party
-expense_by_coarsedesc_by_party <-aggregate(Debt2['amount'],
-                                           by=list(coarsedescription=Debt2$coarsedescription, party=Debt2$party), FUN=sum)
+expense_by_coarsedesc_by_party <-aggregate(Debt2['amount'],                                         by=list(coarsedescription=Debt2$coarsedescription, party=Debt2$party), FUN=sum)
 
 
 #merge totalamount into expense_by_coarsedesc_by_party
@@ -189,9 +192,7 @@ frac_by_coarsedesc_by_party2$barlabels <- with(frac_by_coarsedesc_by_party2, ife
 cd <- frac_by_coarsedesc_by_party2$coarsedescription
 frac_by_coarsedesc_by_party2$barlabels <- ifelse(y,frac_by_coarsedesc_by_party2$coarsedescription,"" )
 
-b
-?ifelse
-df$newVals <- with(df, ifelse(tf, value/2, value))
+
 # now make a sidebyside bar chart
 barplot(frac_by_coarsedesc_by_party2$fractionofpartytotal, main="Fractional Expenditures by Coarse Description, by Party",
         xlab="Coarse Description", col=c("blue","red","green"),
@@ -201,16 +202,42 @@ barplot(frac_by_coarsedesc_by_party2$fractionofpartytotal, main="Fractional Expe
 
 ### For Which Types of Offices is the Most Money Spent?
 
-An analysis of amount of expenditure by office was performed by summing the amounts spent by unique value of the office2 column (the office column from the right half of the dataset).  However, since the number of offices of a given type varied (there are more state representatives than state senators or governors), and since the number of candidates varied by office type, the amounts were divided by the number of unique combinations of legislativedistrict, position, and party within each office2 value.  The intent of this was to normalize the amounts to a "per campaign" value.  For example, there were 39 unique candidates for state representative.  In Washington, there are two state representatives per legislative district, and the position column designates which of these two slots a row belongs to.  The party column provides another level of granularity for a given line item.  A pareto of expenditures per campaign by office is shown in Figure 13.
+An analysis of amount of expenditure by office was performed by summing the amounts spent by unique value of the office2 column (the office column from the right half of the dataset).  However, since the number of offices of a given type varied (there are more state representatives than state senators or governors), and since the number of candidates varied by office type, the amounts were divided by the number of unique combinations of legislativedistrict, position, and party within each office2 value.  The intent of this was to normalize the amounts to a "per campaign" value.  For example, there were 39 unique candidates for state representative.  In Washington, there are two state representatives per legislative district, and the position column designates which of these two slots a row belongs to.  The party column provides another level of granularity for a given line item.  A pareto of expenditures per campaign by office is shown in Figure 13.  Note that since the dataset does not have a unique candidate identifier, such as a number or registration ID, multiple candidates of the same party with expenditures for the same office and position would be treated as a single candidate.
+
+The pareto shows that the race for governor had the greatest expenditure per candidate.  Two other statewide offices, treasurer and attorney general, showed the next highest expenditures per candidate.
 
 ```{r}
 # get sum of amount by DUMMY
+#sumbyoffice <- aggregate(Debt2['amount'],
+#by=list(office=Debt2$DUMMY), FUN=sum)
 
 # get sum(amount) and n rows by unique value of DUMMY, legislativedistrict, position, and party,
 # and jurisdictiontype (in case I summarize by that later).
+sumbycand <- aggregate(Debt2['amount'],
+by=list(office=Debt2$DUMMY, legislativedistrict=Debt2$legislativedistrict, position=Debt2$position, party=Debt2$party, jurisdictiontype=Debt2$jurisdictiontype), FUN=sum)
 
-# then sum amounts by DUMMY (the total amount spent by everyone going for that type of office)
 
+# now sum the amounts in sumbycand and count rows by office
+sumbyoffice <- aggregate(sumbycand['amount'], by=list(office=sumbycand$office), FUN=sum)
+countbyoffice <- aggregate(sumbycand['position'], by=list(office=sumbycand$office), FUN=length)
+
+# Rename cols
+names(sumbyoffice)[names(sumbyoffice)=="amount"] <- "totalamount"
+names(countbyoffice)[names(countbyoffice)=="position"] <- "ncandidates"
+
+# merge the sum and count data
+amountperjob <- merge(sumbyoffice,countbyoffice)
+amountperjob$mean_amount <- amountperjob$totalamount / amountperjob$ncandidates
+
+# sort by mean_amount desc
+# sort the list descending, create pareto
+amountperjob <- amountperjob[order(amountperjob$mean_amount, decreasing=TRUE),]
+
+# bar plot tutorial https://www.statmethods.net/graphs/bar.html
+barplot(amountperjob$mean_amount, main="Expenditure per Candidate by Office", 
+  	xlab="Office",
+  	names.arg=amountperjob$office,
+  	cex.names=1, las=2)
 
 
 ```
