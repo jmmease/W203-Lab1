@@ -119,40 +119,39 @@ Next, an brief overview of these 28 variables. The initial description in *itali
  The election year is the repeated integer 2012, with 56 missing values.
  
  - `amount`: *The amount of the debt incurred or order placed* \
- Floating point values representing the debt incurred in dollars. Values range from 3.24 to 19000.00
- There are 56 missing values
+ Floating point values representing the debt incurred in dollars.
+ Values range from 3.24 to 19000.00 and there are 56 missing values.
  
  - `recordtype`: *This field designates the item as a debt* \
- There are 56 missing values
+  Factor with a single level, `DEBT`, that also contains 56 missing values.
  
  - `fromdate`: *The start date of the period for the report on which this debt record was reported* \
- There are 56 missing values
+ Dates that range from 2009-10-01 to 2012-08-01 with 56 missing values.
  
  - `thrudate`: *The end date of the period for the report on which this debt record was reported* \
- There are 56 missing values
+ Dates that range from 2009-10-31 to 2012-08-31 with 56 missing values.
  
  - `debtdate`: *The date that the debt was incurred* \
- There are 56 missing values
+ Dates that range from 2008-10-29 to 2012-08-31 with 56 missing values.
  
  - `code`: *The type of debt* \
- There are 56 missing values and an additional 610 empty values
- 
+ There are 3 unique purchase codes: `Operation and Overhead`, `Management Services`,
+ and `Fundraising`. In addition, there are 56 missing values and 610 empty values.
+
  - `description`: *The reported description of the transaction* \
- There are 56 missing values and an additional 39 empty values
+ There are 106 unique purhcase descriptions. There are 56 missing values and an additional 39 empty values.
  
  - `vendorname`: *The name of the vendor or recipient’s name* \
- There are 56 missing values
+ There are 75 unique values (e.g. `SEATTLE MEDIUM NEWSPAPER`, `IMPACT SIGNS`, `THE CONNECTIONS GROUP`, etc.), and 56 missing values.
  
  - `vendoraddress`: *The street address of the vendor or recipient* \
- There are 56 missing values and an additional 24 empty values.
+ There are 80 unique values (e.g. `PO BOX 650448`, `5810 COWAN PL NE`, `2600 S JACKSON ST`, etc.). There are 56 missing values and an additional 24 empty values.
  
  - `vendorcity`: *The city of the vendor or recipient* \
- There are 56 missing values and an additional 24 empty values.
+ There are 30 unique values (e.g. `SAN JOSE`, `SEATTLE`, `TUMWATER`, etc.). There are 56 missing values and an additional 24 empty values.
  
  - `vendorstate`: *The state of the vendor or recipient* \
- There are 56 missing values and an additional 25 empty values.
-
-Discuss the type and meaning of the variables (including DUMMY), Note that DUMMY has nearly the same factors as office
+ There are 4 unique values: `WA`, `DC`, `TX`, `CA`. There are 56 missing values and an additional 25 empty values.
 
 ### Examine row alignment
 Then examine some of the rows (example of one that lines up and one that does not)
