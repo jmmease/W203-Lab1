@@ -257,7 +257,8 @@ boxplot(amount~jurisdictiontype,data=Debt2, main="Transaction Dollar Amounts by 
 
 ### Do Expenditures Change with Time?
 
-As a final investigation, the change in spending amounts over time was examined.  The thrudate value was chosen as the time value to use, since that is when expenditures are reported and since it groups expenditures by month.  Trend plots of the sum, count, and average expenditure amount vs. thrudate are shown in Figures 15-17, respectively.  The trends show that both the number of expenditures and the dollar amount of individual expenditures generally increased as the election drew near.
+As a final investigation, the change in spending amounts over time was examined.  The  data were grouped by month, using the thrudate value, which represents the end of the reporting period.  Every unique value of thrudate was the last day of a given month, with the exception of July, 2012.  For this month, there were two distinct thrudate values (7/16 and 7/30).  For the s
+Every unThe thrudate value was chosen as the time value to use, since that is when expenditures are reported and since it groups expenditures by month.  Trend plots of the sum, count, and average expenditure amount vs. thrudate are shown in Figures 15-17, respectively.  The trends show that both the number of expenditures and the dollar amount of individual expenditures generally increased as the election drew near.
 
 ```{r}
 # Time component
@@ -276,38 +277,56 @@ Figures 15-17 show expenditures attributable to the 2012 election as far back as
 # Copy Debt2 to Debt3
 Debt3 <- Debt2
 
+
 # Create dummy variable, TREASURY
 Debt3$Treasury<-ifelse(Debt3$coarsedescription=="TREASURY",1,0)
+# Let's make a debtmonth column
+library(lubridate)
+# Get just the month
+Debt3$truedebtdate<-mdy(Debt3$debtdate)
+Debt3$debtmonth<-floor_date(Debt3$truedebtdate, unit="month")
+# Make it look cute
+#Debt3$debtmonth<- format(Debt3$debtmonth, format="%M/%D/%Y")
+# Make str version so it will be a factor
+Debt3$debtmonthstr<- as.character(Debt3$debtmonth)
 
 
-" HERE I AM END OF EVENING 24MAY2018.  I would like to 
-know how to perform multiple aggregations on multiple variables in R.
+##need plyr package to use ddply
+library(plyr)
 
-I have thrudate, amount, and Treasury.  I need sum, count, and mean of amount and mean of Treasury by thrudate
+# Now get sum, count, and mean of amount and mean of Treasury by debtmonthstr
+ 
+##summarize data. Because R categorized Day as a factor we can go ahead and use this
+timestats<- ddply(Debt3,~debtmonthstr,summarise,Sum_amount=sum(amount), Count_amount = length(amount),
+      Mean_amount = mean(amount), Mean_Treasury = mean(Treasury))
+ 
 
-"
+#Create debtmonth in timestats, as a date (this works but format is not good for graphing)
+timestats$debtmonth<- strptime(timestats$debtmonthstr,"%Y-%m-%d")
 
-# Now get sum, count, and mean of amount and mean of Treasury by thrudate
-#timestats=aggregate(Debt3$amount, function(x) {
-# c(sum=sum(x), count=length(x), mean=mean(x))}, by=list(thrudate=Debt3$thrudate))
-
-#timestats <- aggregate(. ~thrudate, data = Debt3[c("thrudate", "amount")], FUN = function(x) c(sm=sum(x), ave = #mean(x), n = length(x) ) )
-
-
-
-# sum amount by party
-#amountbyparty <-aggregate(Debt['amount'], by=list(party=Debt$party), FUN=sum)
-
+# format it to MM/YYYY
+# I believe this sets it back to char!
+#timestats$debtmonth<- format(timestats$debtmonth, format="%Y/%m")
 
 
+# sort by it
+timestats<- timestats[order(timestats$debtmonth),]
 
-#merge(aggregate(z~y, data[data$x==1,], function(x) {
-# c(mean=mean(x, na.rm=TRUE), quantile(x, na.rm=TRUE))
-#}), list(y=unique(data$y)), all=TRUE)
+
+xvector=timestats$debtmonth
+yvector=timestats$Sum_amount
+yvector2=timestats$Count_amount
+yvector3=timestats$Mean_amount
+plot(xvector, yvector,xlab="Reporting Period",  ylab="Sum of Expenditures", main="Sum of Amount")
+plot(xvector, yvector2,xlab="Reporting Period",  ylab="Number of Expenditures", main="Count of Amount")
+plot(xvector, yvector3,xlab="Reporting Period",  ylab="Mean of Expenditures", main="Mean of Amount")
+
+
+
 
 #plot(duration, waiting,            # plot the variables 
 #+   xlab="Eruption duration",        # x−axis label 
-#+   ylab="Time waited")              # y−axis label
+#+   ylab="Time waited")              # y−axis label'
 
 ```
 
