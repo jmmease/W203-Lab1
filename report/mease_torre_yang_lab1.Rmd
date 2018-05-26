@@ -555,8 +555,8 @@ I have thrudate, amount, and Treasury.  I need sum, count, and mean of amount an
 #}), list(y=unique(data$y)), all=TRUE)
 
 #plot(duration, waiting,            # plot the variables 
-#+   xlab="Eruption duration",        # x−axis label 
-#+   ylab="Time waited")              # y−axis label
+#+   xlab="Eruption duration",        # x-axis label 
+#+   ylab="Time waited")              # y-axis label
 
 ```
 
