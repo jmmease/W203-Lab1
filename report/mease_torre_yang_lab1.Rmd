@@ -48,6 +48,115 @@ Debt <- unique(DebtRightValid)
 
 Univariate analysis...
 
+### Who are the candidates and how many reports did they file?
+
+```{r}
+# Find number of unique reportnumbers
+length(unique(DebtLeft$reportnumber))
+# Find number of unique cadidate names
+length(unique(DebtLeft$filername))
+```
+
+On the left half of the data set, we were given 1043 unique report numbers, each of which are associated with a candidate. 
+However, there are only 134 unique candidate names in the data set. This suggests that some candidate filed multiple B.3 reports.
+
+To visualize this, we can aggregate the data into a dataframe showing the number of reports filed by each candidate. The summary of this dataframe shows that the candidate that filed the most reports, filed 38 of them while the candidate that filed the fewest reports filed only one. The median of the dataset is 6, while the mean is 7.784 which suggests a strong skew towards the right of the histogram.
+```{r}
+# Find the number of reports filed by each candidate
+RepPerCan <- aggregate(reportnumber ~ filername, DebtLeft, length)
+colnames(RepPerCan)[2] <- "NumOfReports"
+# Summarize data
+summary(RepPerCan$NumOfReports)
+```
+The summary of this dataframe shows that the candidate that filed the most reports, filed 38 of them while the candidate that filed the fewest reports filed only one. The median of the dataset is 6, while the mean is 7.784 which suggests a strong skew towards the right of the histogram.
+
+Before looking at the histogram, lets take a look at the candidates that filed the most reports. Unfortunately, our dataset does not allow us to view which candidates occured the most debt. However, we can see which ones filed the most debt reports.
+```{r}
+# Show top 5 candidates that filed the most reports
+head(RepPerCan[order(RepPerCan$NumOfReports, decreasing = TRUE),],5)
+```
+
+The summary of the dataset suggests that there are many candidates that filed only one report. In fact, 22 candidates filed only 1 report.
+
+```{r}
+# How many candidates filed only 1 report?
+length(which(RepPerCan$NumOfReports == 1))
+```
+
+The figure below is a histogram showing the number of reports filed by each candidate and it does seem that there is a skew to the right. Most candidates filed between 1 and 5 reports and very few filed over 20 reports.
+
+```{r}
+# Show histogram showing distribution of the number of reports filed by each candidate.
+hist(RepPerCan$NumOfReports, main = "Histogram of the Number of Reports Filed by Each Candidate",
+     xlab = "Number of Reports Filed by a Candidate")
+axis(1, at = seq(0,40, by = 5))
+```
+
+### Which offices are being pursued by the candidates?
+
+To get a sense of how many candidates are applying for each office, we first have to get rid of the duplicate candidates.
+```{R}
+# Remove reportnumber and keep unique rows
+Office <- unique(DebtLeft[-1])
+# Find length of rows.
+length(Office$filerid)
+```
+
+After creating this new dataframe, there are 141 rows instead of the expected 134. By doing a summary of Office$filername, we can see that there are 7 candidates that have more than 1 row. Upon inspection, these 7 candidates have 2 different filerids and sought 2 different offices. An example is shown below. According to the two rows shown below, it looks like David S Frockt was running for State Representative but then switched to State Senator based on the numbering of the filerid. With some quick research, we found that David Frockt was a State Representative in 2010 but was elected as State Senator in the middle of 2011 after the death of Senator Scott White. This special situation would explains the discrepancy with the dataset. 
+
+```{R}
+# Show exmaple of duplicate candidate.
+Office[Office$filername == "FROCKT DAVID S",]
+```
+
+Because when a candidate changes his mind and decides to go for a different office, it still reflects the popularity of both offices. Besides, we do not have to data to determine which of these offices the candidate ended up running for so I will keep these the dataset as 141 rows and not remove any duplicate candidate for the histogram.
+
+```{R}
+# Create Dataframe showing the number of candidates running for each office
+OfficePopularity <- aggregate(filername ~ office, Office, length)
+colnames(OfficePopularity)[2] <- "N"
+
+# Show barplot of results
+op <- par(mar = c(10,4,4,2) + 0.1)
+barplot(OfficePopularity$N, main = "Number of Candidates Running for Each Office", ylab = "# of Cadidates",
+      names.arg=OfficePopularity$office, las = 2, cex.names=0.6)
+par(op)
+```
+
+### Which party has the most candidates running for office?
+Now we will start looking at the data in the second data set (the one with vendor information and debt amount). We have no way of knowing which debt report was filed by which candidate and we know from above that one candidate can file multiple reports. However, assuming that each candidate will have a unique combination of office, legislative dictrict, position, party, and jurisdiction, we can find the rows that are unique for all of these categories and assume each row is a candidate. Now we can plot a bar chart to get a sense of how many cadidates for each party are filing these debt reports.
+
+```{R}
+# Only keep Office2, legislativedictrict, position, party, jurisdiction and find unique rows
+DebtUnique <- unique(Debt[1:5])
+# 
+PartyCount <- aggregate(jurisdiction ~ party, DebtUnique, length)
+colnames(PartyCount)[2] <- "N"
+#
+op <- par(mar = c(5,4,4,2) + 0.1)
+barplot(PartyCount$N, main = "Number of Candidates from each Party", ylab = "# of Cadidates",
+      names.arg=PartyCount$party, las = 2, cex.names=0.6)
+par(op)
+```
+As mentioned before, the two data sets are really different and both are very innacurate. So the only thing we can get out of this bar chart is that there are mostly Democratic Candidates running for offices in Washington State.
+
+### Histogram of the debt amount
+```{R}
+summary(Debt$amount)
+```
+Very strong skew to the right.
+
+```{R}
+hist(Debt$amount, breaks = seq(0, 20000, by = 100) , main = "Histogram of the Amount of Dollars per Debt Report Filed",
+     xlab = "Debt Amount per Report ($)", las = 2)
+axis(1, at = seq(0, 20000, by = 1000), las = 2)
+```
+```{R}
+filteredAmount <- Debt[(Debt$amount < 4000),]
+hist(filteredAmount$amount, breaks = seq(0, 4000, by = 100) , main = "Histogram of the Amount of Dollars per Debt Report Filed",
+     xlab = "Debt Amount per Report ($)", las = 2)
+axis(1, at = seq(0, 4000, by = 1000), las = 2)
+```
 ## Analysis of Key Relationships
 
 Key relationships...
