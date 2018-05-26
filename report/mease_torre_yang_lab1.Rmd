@@ -1,10 +1,12 @@
 ---
-title: "W203 Lab 1: Candidate Dept EDA"
-output: html_document
-author: 
- - Jon Mease
- - James De La Torre
- - Adam Yang
+title: 'W203 Lab 1: Candidate Dept EDA'
+author:
+- Jon Mease
+- James De La Torre
+- Adam Yang
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -160,6 +162,7 @@ axis(1, at = seq(0, 4000, by = 1000), las = 2)
 ## Analysis of Key Relationships
 
 Key relationships...
+
 ### How much money is each party spending?
 
 The first bivariate relationship explored was the total expenditure by political party.  The working debt dataset was grouped by party, and the sum of the dollar amounts for each group was computed.  Figure 10 shows a bar chart with this information.  Expenditures in the dataset were overwhelmingly from Democrats,  accounting for 79% of the total dolalr amount.
@@ -185,13 +188,9 @@ barplot(amountbyparty$amount, main="Total Expenditures by Political Party",
   	names.arg=amountbyparty$party,
   	cex.names=1)
 
-# Move on to by pareto subgroup, normalized into percent.
-
-# Maybe I should make a function for bar charts, since I will be making many of them.
-
-
-
 ```
+
+
 
 
 ### Where is the money going?
@@ -235,11 +234,7 @@ barplot(topn$amount, main="Total Expenditures by Coarse Description",
   	names.arg=topn$coarsedescription,
   	cex.names=0.65)
 
-# Move on to by pareto subgroup, normalized into percent.
-
 # Maybe I should make a function for bar charts, since I will be making many of them.
-
-
 
 ```
 
@@ -350,6 +345,81 @@ barplot(amountperjob$mean_amount, main="Expenditure per Candidate by Office",
 
 
 ```
+
+
+### Do Different Jurisdiction Types Have Different Transaction Sizes?
+
+Campaigns for offices of different jurisdiction types are likely conducted differently.  The dataset contains four unique values in its jurisdictiontypes column--judicial, legislative, local, and statewide.  Box plots of transaction amounts by jurisdictiontypes are shown in Figure 13.  To provide insight into the relative number of data points comprising each jurisdition type, the width of the boxes are drawn proportionally to the square root of the number of points.  The plot shows that while there were several outlier points for legislative offices, the highest amounts were in the outliers in the statewide offices.  The three outlier expenditure amounts for statewide offices were all for consulting expenses, whereas the outliers for legislative offices spanned many categories, including mailing services, graphic design and printing, telecom, consulting, and web and data services.  The single outlier for judicial offices was also consulting.  The single outlier expense for local offices was for a credit card payment (to Cabela's, a hunting, fishing, and caping supply store, oddly enough).
+
+The small dataset size of 194 total points, and the disparate number of points by jurisdiction type (Judicial: 14; Legislative: 125; Local: 19; and Statewide: 36) may limit the insight obtained by the box plots, but examination of the outlier points give some indication that consulting fees are some of the most expensive transactions in political campaigns for most types of political offices in Washington.
+
+
+
+```{r}
+
+?boxplot
+# Expenditure amounts by jurisdictiontype
+boxplot(amount~jurisdictiontype,data=Debt2, main="Transaction Dollar Amounts by Jurisdiction Type", 
+  	xlab="Jurisdiction Type", ylab="Amount in Dollars", varwidth=T)
+
+```
+
+### Do Expenditures Change with Time?
+
+As a final investigation, the change in spending amounts over time was examined.  The thrudate value was chosen as the time value to use, since that is when expenditures are reported and since it groups expenditures by month.  Trend plots of the sum, count, and average expenditure amount vs. thrudate are shown in Figures 15-17, respectively.  The trends show that both the number of expenditures and the dollar amount of individual expenditures generally increased as the election drew near.
+
+```{r}
+# Time component
+
+```
+
+
+#### Just what are "Treasury" Expenditures?
+
+Figures 15-17 show expenditures attributable to the 2012 election as far back as 2009.  These may or may not be erroneous data.  Investigation of the descriptions of expenditures in the earliest months indicate that the majority of expenditures through February of 2011 were described as Treasury expenditures.  To understand the significance of these expenditures, a dummy variable, Treasury, was created which was set to 1 for treasury expenses and 0 for all other categories.  The mean of this dummy variable by thrudate (the average fraction of individual expenditures in a month attributable to Treasury) was plotted vs. thrudate.  The plot shows that after February of 2011, the fraction of expenditures with this description decreases significantly, as other expense categories become more numerous.  There are 57 records of Treasury expenses in the dataset, of which 54 have the value "Operations and Overhead" in the code column.  The average amount of treasury expenses is $278.  Without further domain knowledge, one cannot know the exact meaning of these expenses, but perhaps these are monthly fees paid for the services of each campaign's treasurer.
+
+
+```{r}
+# Time component
+
+# Copy Debt2 to Debt3
+Debt3 <- Debt2
+
+# Create dummy variable, TREASURY
+Debt3$Treasury<-ifelse(Debt3$coarsedescription=="TREASURY",1,0)
+
+
+" HERE I AM END OF EVENING 24MAY2018.  I would like to 
+know how to perform multiple aggregations on multiple variables in R.
+
+I have thrudate, amount, and Treasury.  I need sum, count, and mean of amount and mean of Treasury by thrudate
+
+"
+
+# Now get sum, count, and mean of amount and mean of Treasury by thrudate
+#timestats=aggregate(Debt3$amount, function(x) {
+# c(sum=sum(x), count=length(x), mean=mean(x))}, by=list(thrudate=Debt3$thrudate))
+
+#timestats <- aggregate(. ~thrudate, data = Debt3[c("thrudate", "amount")], FUN = function(x) c(sm=sum(x), ave = #mean(x), n = length(x) ) )
+
+
+
+# sum amount by party
+#amountbyparty <-aggregate(Debt['amount'], by=list(party=Debt$party), FUN=sum)
+
+
+
+
+#merge(aggregate(z~y, data[data$x==1,], function(x) {
+# c(mean=mean(x, na.rm=TRUE), quantile(x, na.rm=TRUE))
+#}), list(y=unique(data$y)), all=TRUE)
+
+#plot(duration, waiting,            # plot the variables 
+#+   xlab="Eruption duration",        # x−axis label 
+#+   ylab="Time waited")              # y−axis label
+
+```
+
 
 
 
