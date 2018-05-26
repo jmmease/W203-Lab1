@@ -1,4 +1,4 @@
----
+﻿---
 title: 'W203 Lab 1: Candidate Dept EDA'
 author:
 - Jon Mease
@@ -15,23 +15,167 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction
 
-This is the introduction...
+As members of the campaign committee for the upcoming Washinton state election, we are interested in the nature of debt that candidates for office have taken on in past elections. This report contains the findings of our initial exploratory data analysis of a dataset from the 2012 election.
 
-### State the research question that motivates your analysis.
+**Research question**: How can the amount of debt taken on by candidates in the 2012 Washington state election be understood in relation to all of the other available fields in this data set?
 
-### Load your data set into R.
+### Load data set
+The data set we are investigating is named `CandidateDebt.csv` and it is located in the `datasets` directory distributed alongside this report.
+
+First, we use R to load the data set in the ``DebtRaw`` variable, treating the string `'#N/A'` as a missing value.
+```{r}
+DebtRaw = read.csv("../dataset/CandidateDebt.csv", na.strings='#N/A')
+```
+
+This initial dataset has 28 columns and 1043 rows
 
 ```{r}
-DebtRaw = read.csv("../dataset/CandidateDebtDummy.csv", na.strings='#N/A')
+print(sprintf("Number of columns: %d, Number of rows: %d", ncol(DebtRaw), nrow(DebtRaw)))
+```
 
+### Align column labels
+Next, we examine the first 4 rows of the dataset across all columns
+```{r}
+str(DebtRaw[1:4,])
+```
+
+Based on the column names, factor levels, and values it appears that the columns of this data set are well aligned over the first 9 columns (`reportnumber` through `office`). There seems to be an alignment error, However, beginning with the `legislativedistrict` column. The first factor level of this column, `"ATTORNEY GENERAL"`, is not sensible as a legislative district. Instead we expect legislative districts to be identified by an integer, as is the case for the column immediatly after `legislativedistrict`
+
+After careful examination, it is clear that the column labels from `legislativedistrict` all the way through `vendorstate` should all be shifted forward by one position. In this shift we remove the trailing `vendorzip` label, which is appropriate since we do not have any data columns consistent with zip codes.  We must also introduce a new label for the data column previously labeled by `jurisdiction`. We will choose the name `DUMMY` for the time being, and will introduce a more meaningful name once we have identified the column's contents.
+
+```{r}
+DebtShifted = DebtRaw
+colnames(DebtShifted) <- c(colnames(DebtRaw)[1:9],
+                           'DUMMY',
+                           colnames(DebtRaw)[10:(ncol(DebtRaw)-1)])
+```
+
+We once examine the first 4 rows of the data set, and note that the column labels are now well aligned with the data columns. We discuss the columns in more detail in the following section.
+```{r}
+str(DebtShifted[1:4,])
+```
+
+### Convert dates
+The variables `fromdate`, `thrudate`, and `debtdate` are factors that represent dates using a mm/dd/yy format. Here we convert these into `Date` instances.
+```{r}
+DebtShifted$fromdate <- as.Date(DebtShifted$fromdate, format='%m/%d/%y')
+DebtShifted$thrudate <- as.Date(DebtShifted$thrudate, format='%m/%d/%y')
+DebtShifted$debtdate <- as.Date(DebtShifted$debtdate, format='%m/%d/%y')
+```
+
+### Describe variables
+Next, an brief overview of these 28 variables. The initial description in *italics* is the description provided in the `CandidateDebt.pdf` documentation provided alongside the dataset.
+
+ - `reportnumber`: *identifier used for tracking the individual form* \
+ This contains integers with values like 100495995, 100496548, etc. It contains no duplicate or missing values.
+
+ - `origin`: *This field shows from which filed report-type the data originates.* \
+ Factor with a single level, `B.3`, that contains no missing values.
+
+ - `filerid`: *The unique id assigned to a candidate* \
+ Unique candidate id string that is somewhat based on the candidates name. Of the 1043 rows, there are only 141 unique  `filerid` values. There are no missing values.
+ 
+ - `filertype`: *Indicates if this record is for a candidate* \
+ Factor with a single level, `Candidate`, that contains no missing values.
+ 
+ - `filername`: *The candidate or committee name as reported on the candidates registration.* \
+ Of the 1043 rows, there are only 134 unique  `filername` values. There are no missing values.
+ 
+ - `firstname`: *This field represents the first name, as reported by the filer* \
+ There are no missing values.
+ 
+ - `middleinitial`: *This field represents the middle initial, as reported by the filer* \
+ There are no missing values.
+ 
+ - `lastname`: *This field represents the last name, as reported by the filer* \
+ There are no missing values.
+ 
+ - `office`: *The office sought by the candidate* \
+ There are 16 unique `office` values present in the dataset (`GOVERNOR`, `STATE SENATOR`, `COUNTY SHERIFF`, etc.). There are no missing values.
+ 
+ - `DUMMY`: \
+ This is the placeholder column label that was introduced above in order to align the subsequent column labels with their data columns. There are 14 unique `DUMMY` values present in the dataset, and these 14 values are a proper subset of the 16 unique values present in the `office` variable described above.
+ 
+ - `legislativedistrict`: *The Washington State legislative district* \
+ This contains integer district identifiers ranging from 1 to 48 with 354 missing values.
+ 
+ - `position`: *The position associated with an office* \
+ This contains integers ranging from 1 to 40 with 574 missing values.
+ 
+ - `party`: *The political party as declared by the candidate on their registration* \
+ This is a factor containing 4 levels: `DEMOCRAT`,  `REPUBLICAN`, `INDEPENDENT`, `NON PARTISAN`. There are 56 missing values.
+ 
+ - `jurisdiction`: *The political jurisdiction associated with the office of a candidate* \
+ There are 51 unique `jurisdiction` values with values like `LEG DISTRICT 11 - SENATE`, `LEG DISTRICT 41 - HOUSE`, `SUPREME COURT`, etc. There are 56 missing values.
+ 
+ - `jurisdictioncounty`: *The county associated with the jurisdiction of a candidate* \
+ There are 15 unique `jurisdictioncounty` values including `KING`, `PIERCE`, `SPOKANE`, etc.
+ There are 56 missing values and an additional 215 empty values.
+ 
+ - `jurisdictiontype`: *The type of jurisdiction this office is: Statewide, Local, etc* \
+ There are 4 `jurisdictiontype` values: `Statewide`, `Legislative`, `Local`, and `Judicial`. There are 56 missing values
+ 
+ - `electionyear`: *The election year in the case of candidates* \
+ The election year is the repeated integer 2012, with 56 missing values.
+ 
+ - `amount`: *The amount of the debt incurred or order placed* \
+ Floating point values representing the debt incurred in dollars.
+ Values range from 3.24 to 19000.00 and there are 56 missing values.
+ 
+ - `recordtype`: *This field designates the item as a debt* \
+  Factor with a single level, `DEBT`, that also contains 56 missing values.
+ 
+ - `fromdate`: *The start date of the period for the report on which this debt record was reported* \
+ Dates that range from 2009-10-01 to 2012-08-01 with 56 missing values.
+ 
+ - `thrudate`: *The end date of the period for the report on which this debt record was reported* \
+ Dates that range from 2009-10-31 to 2012-08-31 with 56 missing values.
+ 
+ - `debtdate`: *The date that the debt was incurred* \
+ Dates that range from 2008-10-29 to 2012-08-31 with 56 missing values.
+ 
+ - `code`: *The type of debt* \
+ There are 3 unique purchase codes: `Operation and Overhead`, `Management Services`,
+ and `Fundraising`. In addition, there are 56 missing values and 610 empty values.
+
+ - `description`: *The reported description of the transaction* \
+ There are 106 unique purhcase descriptions. There are 56 missing values and an additional 39 empty values.
+ 
+ - `vendorname`: *The name of the vendor or recipient’s name* \
+ There are 75 unique values (e.g. `SEATTLE MEDIUM NEWSPAPER`, `IMPACT SIGNS`, `THE CONNECTIONS GROUP`, etc.), and 56 missing values.
+ 
+ - `vendoraddress`: *The street address of the vendor or recipient* \
+ There are 80 unique values (e.g. `PO BOX 650448`, `5810 COWAN PL NE`, `2600 S JACKSON ST`, etc.). There are 56 missing values and an additional 24 empty values.
+ 
+ - `vendorcity`: *The city of the vendor or recipient* \
+ There are 30 unique values (e.g. `SAN JOSE`, `SEATTLE`, `TUMWATER`, etc.). There are 56 missing values and an additional 24 empty values.
+ 
+ - `vendorstate`: *The state of the vendor or recipient* \
+ There are 4 unique values: `WA`, `DC`, `TX`, `CA`. There are 56 missing values and an additional 25 empty values.
+
+### Examine row alignment
+Then examine some of the rows (example of one that lines up and one that does not)
+
+Then example of one that appears to be out of order (Jill Johnson)
+
+Then discussion of the repititions in the right. But amount always repeats with all of the other columns.
+
+It seems that left and right are two tables that are not (generally) aligned. Given rows that align and Jill Johnson
+
+Speculate that some form of malformed SQL join introduced the duplicates.
+
+We will look at the right table only, with duplicates removed. Note that this assumes that we don't have valid identical transactions on identical days.
+
+### Split data set and remove duplicates
+```{r}
 # Split off left table
-DebtLeft = DebtRaw[, seq(9)]
+DebtLeft = DebtShifted[, seq(9)]
 
 # Split off right table
-DebtRight = DebtRaw[, seq(10, ncol(DebtRaw))]
+DebtRight = DebtShifted[, seq(10, ncol(DebtRaw))]
 
 # Rename DUMMY to office
-colnames(DebtRight)[0] <- 'office'
+colnames(DebtRight)[[1]] <- "office"
 
 # Keep cases with at least one non-NA entry
 DebtRightValid <- DebtRight[rowSums(!is.na(DebtRight)) > 0,]
@@ -39,17 +183,122 @@ DebtRightValid <- DebtRight[rowSums(!is.na(DebtRight)) > 0,]
 # Drop duplicates
 Debt <- unique(DebtRightValid)
 ```
-### Describe your data set. What types of variables does it contain? How many observations are there?
 
-### Evaluate the data quality. Are there any issues with the data? Explain how you handled these potential issues.
-
-### Explain whether any data processing or preparation is required for your data set.
-
+After cleaning steps above, we're left with 194 observations over 19 variables
 
 ## Univariate Analysis of Key Variables
 
 Univariate analysis...
 
+### Who are the candidates and how many reports did they file?
+
+```{r}
+# Find number of unique reportnumbers
+length(unique(DebtLeft$reportnumber))
+# Find number of unique cadidate names
+length(unique(DebtLeft$filername))
+```
+
+On the left half of the data set, we were given 1043 unique report numbers, each of which are associated with a candidate. 
+However, there are only 134 unique candidate names in the data set. This suggests that some candidate filed multiple B.3 reports.
+
+To visualize this, we can aggregate the data into a dataframe showing the number of reports filed by each candidate. The summary of this dataframe shows that the candidate that filed the most reports, filed 38 of them while the candidate that filed the fewest reports filed only one. The median of the dataset is 6, while the mean is 7.784 which suggests a strong skew towards the right of the histogram.
+```{r}
+# Find the number of reports filed by each candidate
+RepPerCan <- aggregate(reportnumber ~ filername, DebtLeft, length)
+colnames(RepPerCan)[2] <- "NumOfReports"
+# Summarize data
+summary(RepPerCan$NumOfReports)
+```
+The summary of this dataframe shows that the candidate that filed the most reports, filed 38 of them while the candidate that filed the fewest reports filed only one. The median of the dataset is 6, while the mean is 7.784 which suggests a strong skew towards the right of the histogram.
+
+Before looking at the histogram, lets take a look at the candidates that filed the most reports. Unfortunately, our dataset does not allow us to view which candidates occured the most debt. However, we can see which ones filed the most debt reports.
+```{r}
+# Show top 5 candidates that filed the most reports
+head(RepPerCan[order(RepPerCan$NumOfReports, decreasing = TRUE),],5)
+```
+
+The summary of the dataset suggests that there are many candidates that filed only one report. In fact, 22 candidates filed only 1 report.
+
+```{r}
+# How many candidates filed only 1 report?
+length(which(RepPerCan$NumOfReports == 1))
+```
+
+The figure below is a histogram showing the number of reports filed by each candidate and it does seem that there is a skew to the right. Most candidates filed between 1 and 5 reports and very few filed over 20 reports.
+
+```{r}
+# Show histogram showing distribution of the number of reports filed by each candidate.
+hist(RepPerCan$NumOfReports, main = "Histogram of the Number of Reports Filed by Each Candidate",
+     xlab = "Number of Reports Filed by a Candidate")
+axis(1, at = seq(0,40, by = 5))
+```
+
+### Which offices are being pursued by the candidates?
+
+To get a sense of how many candidates are applying for each office, we first have to get rid of the duplicate candidates.
+```{R}
+# Remove reportnumber and keep unique rows
+Office <- unique(DebtLeft[-1])
+# Find length of rows.
+length(Office$filerid)
+```
+
+After creating this new dataframe, there are 141 rows instead of the expected 134. By doing a summary of Office$filername, we can see that there are 7 candidates that have more than 1 row. Upon inspection, these 7 candidates have 2 different filerids and sought 2 different offices. An example is shown below. According to the two rows shown below, it looks like David S Frockt was running for State Representative but then switched to State Senator based on the numbering of the filerid. With some quick research, we found that David Frockt was a State Representative in 2010 but was elected as State Senator in the middle of 2011 after the death of Senator Scott White. This special situation would explains the discrepancy with the dataset. 
+
+```{R}
+# Show exmaple of duplicate candidate.
+Office[Office$filername == "FROCKT DAVID S",]
+```
+
+Because when a candidate changes his mind and decides to go for a different office, it still reflects the popularity of both offices. Besides, we do not have to data to determine which of these offices the candidate ended up running for so I will keep these the dataset as 141 rows and not remove any duplicate candidate for the histogram.
+
+```{R}
+# Create Dataframe showing the number of candidates running for each office
+OfficePopularity <- aggregate(filername ~ office, Office, length)
+colnames(OfficePopularity)[2] <- "N"
+
+# Show barplot of results
+op <- par(mar = c(10,4,4,2) + 0.1)
+barplot(OfficePopularity$N, main = "Number of Candidates Running for Each Office", ylab = "# of Cadidates",
+      names.arg=OfficePopularity$office, las = 2, cex.names=0.6)
+par(op)
+```
+
+### Which party has the most candidates running for office?
+Now we will start looking at the data in the second data set (the one with vendor information and debt amount). We have no way of knowing which debt report was filed by which candidate and we know from above that one candidate can file multiple reports. However, assuming that each candidate will have a unique combination of office, legislative dictrict, position, party, and jurisdiction, we can find the rows that are unique for all of these categories and assume each row is a candidate. Now we can plot a bar chart to get a sense of how many cadidates for each party are filing these debt reports.
+
+```{R}
+# Only keep Office2, legislativedictrict, position, party, jurisdiction and find unique rows
+DebtUnique <- unique(Debt[1:5])
+# 
+PartyCount <- aggregate(jurisdiction ~ party, DebtUnique, length)
+colnames(PartyCount)[2] <- "N"
+#
+op <- par(mar = c(5,4,4,2) + 0.1)
+barplot(PartyCount$N, main = "Number of Candidates from each Party", ylab = "# of Cadidates",
+      names.arg=PartyCount$party, las = 2, cex.names=0.6)
+par(op)
+```
+As mentioned before, the two data sets are really different and both are very innacurate. So the only thing we can get out of this bar chart is that there are mostly Democratic Candidates running for offices in Washington State.
+
+### Histogram of the debt amount
+```{R}
+summary(Debt$amount)
+```
+Very strong skew to the right.
+
+```{R}
+hist(Debt$amount, breaks = seq(0, 20000, by = 100) , main = "Histogram of the Amount of Dollars per Debt Report Filed",
+     xlab = "Debt Amount per Report ($)", las = 2)
+axis(1, at = seq(0, 20000, by = 1000), las = 2)
+```
+```{R}
+filteredAmount <- Debt[(Debt$amount < 4000),]
+hist(filteredAmount$amount, breaks = seq(0, 4000, by = 100) , main = "Histogram of the Amount of Dollars per Debt Report Filed",
+     xlab = "Debt Amount per Report ($)", las = 2)
+axis(1, at = seq(0, 4000, by = 1000), las = 2)
+```
 ## Analysis of Key Relationships
 
 Key relationships...
@@ -209,7 +458,7 @@ The pareto shows that the race for governor had the greatest expenditure per can
 # get sum(amount) and n rows by unique value of DUMMY, legislativedistrict, position, and party,
 # and jurisdictiontype (in case I summarize by that later).
 sumbycand <- aggregate(Debt2['amount'],
-by=list(office=Debt2$DUMMY, legislativedistrict=Debt2$legislativedistrict, position=Debt2$position, party=Debt2$party, jurisdictiontype=Debt2$jurisdictiontype), FUN=sum)
+by=list(office=Debt2$office, legislativedistrict=Debt2$legislativedistrict, position=Debt2$position, party=Debt2$party, jurisdictiontype=Debt2$jurisdictiontype), FUN=sum)
 
 
 # now sum the amounts in sumbycand and count rows by office
@@ -324,18 +573,52 @@ plot(xvector, yvector3,xlab="Reporting Period",  ylab="Mean of Expenditures", ma
 
 
 
-#plot(duration, waiting,            # plot the variables 
-#+   xlab="Eruption duration",        # x−axis label 
-#+   ylab="Time waited")              # y−axis label'
 
 ```
 
 
+### What jurisdiction types to parties spend their money on?
+
+Interesting observations:
+ - Democrats outspent all others on Legislative and Statewide elections
+ - Republicans focused on Legislative and Local elections
+ - Non partisians outspent all others on Judicial and Local elections
+
+```{r}
+party_jurtype_sum <- aggregate(Debt['amount'],
+                                  by=list(party=Debt$party,
+                                          jurisdictiontype=Debt$jurisdictiontype),
+                                  FUN=sum)
+
+# Order by total spending
+xtab_sum <- xtabs(amount ~ jurisdictiontype + party, data=party_jurtype_sum)
+xtab_sum <- xtab_sum[,order(colSums(xtab_sum), decreasing = TRUE)]
+
+xtab_sum_mat <- data.matrix(xtab_sum)
+barplot(xtab_sum_mat,
+        beside = TRUE,
+        legend.text = rownames(xtab_sum_mat),
+        main = "Total party debt across jurisdiction types",
+        xlab = "party",
+        ylab = "total debt amount")
+```
 
 
 ## Analysis of Secondary Effects ...
 
 Secondary effects...
 
+Jurisdiction Types vs Party counts?
+
+Party vs Office counts?
+
 ## Conclusion
+
+Debt amount is highly skewed in the positive direction.
+
+Statewide amounts have the largest skew of the jurisdiction types
+
+Total expendatures for democrats far exceed those for all other parties combined
+
+
 Conclusion...
