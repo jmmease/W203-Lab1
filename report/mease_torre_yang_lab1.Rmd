@@ -15,46 +15,138 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction
 
-As members of the campaign committee for the upcoming Washinton state election, we are interested in the nature of debt that candidates for office have taken on in past elections. This report contains the findings of our initial exploratory data analysis of a dataset covering the 2012 election.
+As members of the campaign committee for the upcoming Washinton state election, we are interested in the nature of debt that candidates for office have taken on in past elections. This report contains the findings of our initial exploratory data analysis of a dataset from the 2012 election.
 
-### Research question
-How can the amount of debt taken on by candidates in the 2012 Washington state election be understood in relation to all of the other available fields in this dataset?
+**Research question**: How can the amount of debt taken on by candidates in the 2012 Washington state election be understood in relation to all of the other available fields in this data set?
 
-### Dataset
+### Load data set
+The data set we are investigating is named `CandidateDebt.csv` and it is located in the `datasets` directory distributed alongside this report.
 
-### Load your data set into R.
-First we load the data set, treating the string `'#N/A'` as a missing value.
+First, we use R to load the data set in the ``DebtRaw`` variable, treating the string `'#N/A'` as a missing value.
 ```{r}
 DebtRaw = read.csv("../dataset/CandidateDebt.csv", na.strings='#N/A')
 ```
-Initially is appears that we have 1043 observations over 28 variables.
 
-Next we examine the first 4 rows of the dataset
+This initial dataset has 28 columns and 1043 rows
+
+```{r}
+print(sprintf("Number of columns: %d, Number of rows: %d", ncol(DebtRaw), nrow(DebtRaw)))
+```
+
+### Align column labels
+Next, we examine the first 4 rows of the dataset across all columns
 ```{r}
 str(DebtRaw[1:4,])
 ```
 
-From this information we can see that there appears to be a mis-alignment between the column headers and the datasets starting around the 10th column `legislativedistrict`.
+Based on the column names, factor levels, and values it appears that the columns of this data set are well aligned over the first 9 columns (`reportnumber` through `office`). There seems to be an alignment error, However, beginning with the `legislativedistrict` column. The first factor level of this column, `"ATTORNEY GENERAL"`, is not sensible as a legislative district. Instead we expect legislative districts to be identified by an integer, as is the case for the column immediatly after `legislativedistrict`
 
-Then insert a new DUMMY column header in between the 9th and 10th column, then display `DebtShifted`
+After careful examination, it is clear that the column labels from `legislativedistrict` all the way through `vendorstate` should all be shifted forward by one position. In this shift we remove the trailing `vendorzip` label, which is appropriate since we do not have any data columns consistent with zip codes.  We must also introduce a new label for the data column previously labeled by `jurisdiction`. We will choose the name `DUMMY` for the time being, and will introduce a more meaningful name once we have identified the column's contents.
 
 ```{r}
 DebtShifted = DebtRaw
 colnames(DebtShifted) <- c(colnames(DebtRaw)[1:9],
                            'DUMMY',
                            colnames(DebtRaw)[10:(ncol(DebtRaw)-1)])
+```
+
+We once examine the first 4 rows of the data set, and note that the column labels are now well aligned with the data columns. We discuss the columns in more detail in the following section.
+```{r}
 str(DebtShifted[1:4,])
 ```
 
-### Outline:
-Outline of prose to cover the following prompts:
+### Describe variables
+Next, an brief overview of these 28 variables. The initial description in *italics* is the description provided in the `CandidateDebt.pdf` documentation provided alongside the dataset.
 
- - Describe your data set. What types of variables does it contain? How many observations are there?
- - Evaluate the data quality. Are there any issues with the data? Explain how you handled these potential issues.
- - Explain whether any data processing or preparation is required for your data set.
+ - `reportnumber`: *identifier used for tracking the individual form* \
+ This contains integers with values like 100495995, 100496548, etc. It contains no duplicate or missing values.
+
+ - `origin`: *This field shows from which filed report-type the data originates.* \
+ Factor with a single level, `B.3`, that contains no missing values.
+
+ - `filerid`: *The unique id assigned to a candidate* \
+ Unique candidate id string that is somewhat based on the candidates name. Of the 1043 rows, there are only 141 unique  `filerid` values. There are no missing values.
+ 
+ - `filertype`: *Indicates if this record is for a candidate* \
+ Factor with a single level, `Candidate`, that contains no missing values.
+ 
+ - `filername`: *The candidate or committee name as reported on the candidates registration.* \
+ Of the 1043 rows, there are only 134 unique  `filername` values. There are no missing values.
+ 
+ - `firstname`: *This field represents the first name, as reported by the filer* \
+ There are no missing values.
+ 
+ - `middleinitial`: *This field represents the middle initial, as reported by the filer* \
+ There are no missing values.
+ 
+ - `lastname`: *This field represents the last name, as reported by the filer* \
+ There are no missing values.
+ 
+ - `office`: *The office sought by the candidate* \
+ There are 16 unique `office` values present in the dataset (`GOVERNOR`, `STATE SENATOR`, `COUNTY SHERIFF`, etc.). There are no missing values.
+ 
+ - `DUMMY`: \
+ This is the placeholder column label that was introduced above in order to align the subsequent column labels with their data columns. There are 14 unique `DUMMY` values present in the dataset, and these 14 values are a proper subset of the 16 unique values present in the `office` variable described above.
+ 
+ - `legislativedistrict`: *The Washington State legislative district* \
+ This contains integer district identifiers ranging from 1 to 48 with 354 missing values.
+ 
+ - `position`: *The position associated with an office* \
+ This contains integers ranging from 1 to 40 with 574 missing values.
+ 
+ - `party`: *The political party as declared by the candidate on their registration* \
+ This is a factor containing 4 levels: `DEMOCRAT`,  `REPUBLICAN`, `INDEPENDENT`, `NON PARTISAN`. There are 56 missing values.
+ 
+ - `jurisdiction`: *The political jurisdiction associated with the office of a candidate* \
+ There are 51 unique `jurisdiction` values with values like `LEG DISTRICT 11 - SENATE`, `LEG DISTRICT 41 - HOUSE`, `SUPREME COURT`, etc. There are 56 missing values.
+ 
+ - `jurisdictioncounty`: *The county associated with the jurisdiction of a candidate* \
+ There are 15 unique `jurisdictioncounty` values including `KING`, `PIERCE`, `SPOKANE`, etc.
+ There are 56 missing values and an additional 215 empty values.
+ 
+ - `jurisdictiontype`: *The type of jurisdiction this office is: Statewide, Local, etc* \
+ There are 4 `jurisdictiontype` values: `Statewide`, `Legislative`, `Local`, and `Judicial`. There are 56 missing values
+ 
+ - `electionyear`: *The election year in the case of candidates* \
+ The election year is the repeated integer 2012, with 56 missing values.
+ 
+ - `amount`: *The amount of the debt incurred or order placed* \
+ Floating point values representing the debt incurred in dollars. Values range from 3.24 to 19000.00
+ There are 56 missing values
+ 
+ - `recordtype`: *This field designates the item as a debt* \
+ There are 56 missing values
+ 
+ - `fromdate`: *The start date of the period for the report on which this debt record was reported* \
+ There are 56 missing values
+ 
+ - `thrudate`: *The end date of the period for the report on which this debt record was reported* \
+ There are 56 missing values
+ 
+ - `debtdate`: *The date that the debt was incurred* \
+ There are 56 missing values
+ 
+ - `code`: *The type of debt* \
+ There are 56 missing values and an additional 610 empty values
+ 
+ - `description`: *The reported description of the transaction* \
+ There are 56 missing values and an additional 39 empty values
+ 
+ - `vendorname`: *The name of the vendor or recipient’s name* \
+ There are 56 missing values
+ 
+ - `vendoraddress`: *The street address of the vendor or recipient* \
+ There are 56 missing values and an additional 24 empty values.
+ 
+ - `vendorcity`: *The city of the vendor or recipient* \
+ There are 56 missing values and an additional 24 empty values.
+ 
+ - `vendorstate`: *The state of the vendor or recipient* \
+ There are 56 missing values and an additional 25 empty values.
 
 Discuss the type and meaning of the variables (including DUMMY), Note that DUMMY has nearly the same factors as office
 
+### Examine row alignment
 Then examine some of the rows (example of one that lines up and one that does not)
 
 Then example of one that appears to be out of order (Jill Johnson)
@@ -67,6 +159,7 @@ Speculate that some form of malformed SQL join introduced the duplicates.
 
 We will look at the right table only, with duplicates removed. Note that this assumes that we don't have valid identical transactions on identical days.
 
+### Split data set and remove duplicates
 ```{r}
 # Split off left table
 DebtLeft = DebtShifted[, seq(9)]
@@ -85,7 +178,6 @@ Debt <- unique(DebtRightValid)
 ```
 
 After cleaning steps above, we're left with 194 observations over 19 variables
-
 
 ## Univariate Analysis of Key Variables
 
