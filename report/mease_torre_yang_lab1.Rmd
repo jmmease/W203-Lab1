@@ -55,6 +55,14 @@ We once examine the first 4 rows of the data set, and note that the column label
 str(DebtShifted[1:4,])
 ```
 
+### Convert dates
+The variables `fromdate`, `thrudate`, and `debtdate` are factors that represent dates using a mm/dd/yy format. Here we convert these into `Date` instances.
+```{r}
+DebtShifted$fromdate <- as.Date(DebtShifted$fromdate, format='%m/%d/%y')
+DebtShifted$thrudate <- as.Date(DebtShifted$thrudate, format='%m/%d/%y')
+DebtShifted$debtdate <- as.Date(DebtShifted$debtdate, format='%m/%d/%y')
+```
+
 ### Describe variables
 Next, an brief overview of these 28 variables. The initial description in *italics* is the description provided in the `CandidateDebt.pdf` documentation provided alongside the dataset.
 
