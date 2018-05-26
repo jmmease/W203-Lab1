@@ -15,23 +15,67 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction
 
-This is the introduction...
+As members of the campaign committee for the upcoming Washinton state election, we are interested in the nature of debt that candidates for office have taken on in past elections. This report contains the findings of our initial exploratory data analysis of a dataset covering the 2012 election.
 
-### State the research question that motivates your analysis.
+### Research question
+How can the amount of debt taken on by candidates in the 2012 Washington state election be understood in relation to all of the other available fields in this dataset?
+
+### Dataset
 
 ### Load your data set into R.
+First we load the data set, treating the string `'#N/A'` as a missing value.
+```{r}
+DebtRaw = read.csv("../dataset/CandidateDebt.csv", na.strings='#N/A')
+```
+Initially is appears that we have 1043 observations over 28 variables.
+
+Next we examine the first 4 rows of the dataset
+```{r}
+str(DebtRaw[1:4,])
+```
+
+From this information we can see that there appears to be a mis-alignment between the column headers and the datasets starting around the 10th column `legislativedistrict`.
+
+Then insert a new DUMMY column header in between the 9th and 10th column, then display `DebtShifted`
 
 ```{r}
-DebtRaw = read.csv("../dataset/CandidateDebtDummy.csv", na.strings='#N/A')
+DebtShifted = DebtRaw
+colnames(DebtShifted) <- c(colnames(DebtRaw)[1:9],
+                           'DUMMY',
+                           colnames(DebtRaw)[10:(ncol(DebtRaw)-1)])
+str(DebtShifted[1:4,])
+```
 
+### Outline:
+Outline of prose to cover the following prompts:
+
+ - Describe your data set. What types of variables does it contain? How many observations are there?
+ - Evaluate the data quality. Are there any issues with the data? Explain how you handled these potential issues.
+ - Explain whether any data processing or preparation is required for your data set.
+
+Discuss the type and meaning of the variables (including DUMMY), Note that DUMMY has nearly the same factors as office
+
+Then examine some of the rows (example of one that lines up and one that does not)
+
+Then example of one that appears to be out of order (Jill Johnson)
+
+Then discussion of the repititions in the right. But amount always repeats with all of the other columns.
+
+It seems that left and right are two tables that are not (generally) aligned. Given rows that align and Jill Johnson
+
+Speculate that some form of malformed SQL join introduced the duplicates.
+
+We will look at the right table only, with duplicates removed. Note that this assumes that we don't have valid identical transactions on identical days.
+
+```{r}
 # Split off left table
-DebtLeft = DebtRaw[, seq(9)]
+DebtLeft = DebtShifted[, seq(9)]
 
 # Split off right table
-DebtRight = DebtRaw[, seq(10, ncol(DebtRaw))]
+DebtRight = DebtShifted[, seq(10, ncol(DebtRaw))]
 
 # Rename DUMMY to office
-colnames(DebtRight)[0] <- 'office'
+colnames(DebtRight)[[1]] <- "office"
 
 # Keep cases with at least one non-NA entry
 DebtRightValid <- DebtRight[rowSums(!is.na(DebtRight)) > 0,]
@@ -39,11 +83,8 @@ DebtRightValid <- DebtRight[rowSums(!is.na(DebtRight)) > 0,]
 # Drop duplicates
 Debt <- unique(DebtRightValid)
 ```
-### Describe your data set. What types of variables does it contain? How many observations are there?
 
-### Evaluate the data quality. Are there any issues with the data? Explain how you handled these potential issues.
-
-### Explain whether any data processing or preparation is required for your data set.
+After cleaning steps above, we're left with 194 observations over 19 variables
 
 
 ## Univariate Analysis of Key Variables
@@ -209,7 +250,7 @@ The pareto shows that the race for governor had the greatest expenditure per can
 # get sum(amount) and n rows by unique value of DUMMY, legislativedistrict, position, and party,
 # and jurisdictiontype (in case I summarize by that later).
 sumbycand <- aggregate(Debt2['amount'],
-by=list(office=Debt2$DUMMY, legislativedistrict=Debt2$legislativedistrict, position=Debt2$position, party=Debt2$party, jurisdictiontype=Debt2$jurisdictiontype), FUN=sum)
+by=list(office=Debt2$office, legislativedistrict=Debt2$legislativedistrict, position=Debt2$position, party=Debt2$party, jurisdictiontype=Debt2$jurisdictiontype), FUN=sum)
 
 
 # now sum the amounts in sumbycand and count rows by office
