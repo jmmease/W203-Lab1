@@ -634,13 +634,11 @@ plot(xvector, yvector3,xlab="Reporting Period",  ylab="Mean of Expenditures", ma
 
 ```
 
+## Analysis of Secondary Effects
+We now extend a few of the bivariate relationships discussed above with a secondary variable that deepens our understanding of the primary relationship.
 
-### What jurisdiction types to parties spend their money on?
-
-Interesting observations:
- - Democrats outspent all others on Legislative and Statewide elections
- - Republicans focused on Legislative and Local elections
- - Non partisians outspent all others on Judicial and Local elections
+### What jurisdiction types do the parties spend their money on?
+We saw above that candidates from the Democratic party far outspend the candidates from all of the other parties. When we examine the secondary effect of the jurisdiction type (`jurisdictiontype`) on this relationship, the story is even more interesting. Note: We again omit the Independent candidates from this summary due to their overall low spending amount.
 
 ```{r}
 party_jurtype_sum <- aggregate(Debt['amount'],
@@ -652,23 +650,21 @@ party_jurtype_sum <- aggregate(Debt['amount'],
 xtab_sum <- xtabs(amount ~ jurisdictiontype + party, data=party_jurtype_sum)
 xtab_sum <- xtab_sum[,order(colSums(xtab_sum), decreasing = TRUE)]
 
+# Remove INDEPENDENT
+xtab_sum <- xtab_sum[,colnames(xtab_sum) != 'INDEPENDENT']
+
 xtab_sum_mat <- data.matrix(xtab_sum)
 barplot(xtab_sum_mat,
         beside = TRUE,
         legend.text = rownames(xtab_sum_mat),
-        main = "Total party debt across jurisdiction types",
+        main = "Total party spending across jurisdiction types",
         xlab = "party",
-        ylab = "total debt amount")
+        ylab = "total amount spent")
 ```
 
+Now we can see that although the Democratic party spends more money than the other parties overall, they spend nearly all of it on legislative and statewide elections. The Republican party, on the other hand, focuses their resources on legislative and local elections and spends almost nothing on statewide elections. This may suggest that Washington state, as a whole, is sufficiently Democratic that the Republican party does not attempt to compete for statewide offices, and instead focuses its resources on competing for geographically localized offices in more conservative districts.
 
-## Analysis of Secondary Effects ...
-
-Secondary effects...
-
-Jurisdiction Types vs Party counts?
-
-Party vs Office counts?
+We can also see that the only candidates spending money on Judicial elections are non-partisian.  This suggests that there may be a requirement that judicial office holders not be afiliated with a political party.
 
 ## Conclusion
 
