@@ -188,9 +188,11 @@ After cleaning steps above, we're left with 194 observations over 19 variables
 
 ## Univariate Analysis of Key Variables
 
-Univariate analysis...
+In the introduction, we mentioned how the dataset we received actually consists of 2 misaligned tables. We subsequently split up the two tables into `DebtLeft` and `Debt` where the latter holds the `amount` column which is the dependant variable of our research question. Although the `DebtLeft` table is not aligned with the `amount` variable, it can still give us some insight about the nature of our dataset.
 
 ### Who are the candidates and how many reports did they file?
+
+The first thing we needed to do was get a sense of what each row of the `DebtLeft` table means.
 
 ```{r}
 # Find number of unique reportnumbers
@@ -199,10 +201,10 @@ length(unique(DebtLeft$reportnumber))
 length(unique(DebtLeft$filername))
 ```
 
-On the left half of the data set, we were given 1043 unique report numbers, each of which are associated with a candidate. 
-However, there are only 134 unique candidate names in the data set. This suggests that some candidate filed multiple B.3 reports.
+There are 1043 rows to the `DebtLeft` table and as shown above, there are a total of 1043 unique report numbers, one for each row. Every report number is associated with a candidate, but we have found that there are only 134 unique candidates in the table. This suggests that each row of the data set represents a B.3 report filed by a candidate and some of the candidates filed multiple reports.
 
-To visualize this, we can aggregate the data into a dataframe showing the number of reports filed by each candidate. The summary of this dataframe shows that the candidate that filed the most reports, filed 38 of them while the candidate that filed the fewest reports filed only one. The median of the dataset is 6, while the mean is 7.784 which suggests a strong skew towards the right of the histogram.
+To visualize this, we can aggregate the data into a dataframe showing the number of reports filed by each candidate. The summary of this aggregated dataframe (shown below) tells us that the minimum number of reports filed by a candidate is 1, while the maximum filed is 38. The median of the sample is 6 while the mean is 7.784 which suggests there is a skew towards the right of the distribution. 
+
 ```{r}
 # Find the number of reports filed by each candidate
 RepPerCan <- aggregate(reportnumber ~ filername, DebtLeft, length)
@@ -210,22 +212,22 @@ colnames(RepPerCan)[2] <- "NumOfReports"
 # Summarize data
 summary(RepPerCan$NumOfReports)
 ```
-The summary of this dataframe shows that the candidate that filed the most reports, filed 38 of them while the candidate that filed the fewest reports filed only one. The median of the dataset is 6, while the mean is 7.784 which suggests a strong skew towards the right of the histogram.
 
-Before looking at the histogram, lets take a look at the candidates that filed the most reports. Unfortunately, our dataset does not allow us to view which candidates occured the most debt. However, we can see which ones filed the most debt reports.
+Before looking at the histogram, we decided to take a look at the 5 candidates that filed the most reports as shown below. Unfortunately, our dataset does not allow us to determine which candidates occured the most debt. Because of the misalignemnt with the two halves of our dataset, we can only get a sense of which candidates filed the most debt reports. Furthermore, it is very possible that our dataset is missing a lot of debt reports so these results are only reflective of the sample we received.
+
 ```{r}
 # Show top 5 candidates that filed the most reports
 head(RepPerCan[order(RepPerCan$NumOfReports, decreasing = TRUE),],5)
 ```
 
-The summary of the dataset suggests that there are many candidates that filed only one report. In fact, 22 candidates filed only 1 report.
+Because of the strong skew towards the right of the data set, we are expecting to see many candidates that filed only one report. Instead of listing all of these candidates, we found that there are 22 candidates that only filed one report, which is over 16% of the total reports filed in our sample (shown below).
 
 ```{r}
 # How many candidates filed only 1 report?
 length(which(RepPerCan$NumOfReports == 1))
 ```
 
-The figure below is a histogram showing the number of reports filed by each candidate and it does seem that there is a skew to the right. Most candidates filed between 1 and 5 reports and very few filed over 20 reports.
+The figure below is a histogram showing the number of reports filed by each candidate and it confirmed that there is indeed a skew towards the right of the distribution. We can conclude that most candidates filed between 1 and 5 reports and very few filed over 20 reports. This gives us a bit of an insight about the amount of debt incurred by the candidates. For the candidates in our sample, we now understand that the majority of them will not be filing many reports but there are a few that will file up to 38 reports.
 
 ```{r}
 # Show histogram showing distribution of the number of reports filed by each candidate.
@@ -236,7 +238,10 @@ axis(1, at = seq(0,40, by = 5))
 
 ### Which offices are being pursued by the candidates?
 
-To get a sense of how many candidates are applying for each office, we first have to get rid of the duplicate candidates.
+The next piece of information we can get from the `DebtLeft` dataset is how many candidates in our sample are running for each office. This can give us insight about the `Debt` table which consists of the debt `amount` variable because the office of the candidates is the only variable shared between the two datasets, even if they don't align. 
+
+To get a sense of how many candidates are applying for each office, we first have to get rid of the duplicate candidates. To do this, we can simply remove the `reportnumber` column and keep only the unique rows after that.
+
 ```{R}
 # Remove reportnumber and keep unique rows
 Office <- unique(DebtLeft[-1])
@@ -244,19 +249,20 @@ Office <- unique(DebtLeft[-1])
 length(Office$filerid)
 ```
 
-After creating this new dataframe, there are 141 rows instead of the expected 134. By doing a summary of Office$filername, we can see that there are 7 candidates that have more than 1 row. Upon inspection, these 7 candidates have 2 different filerids and sought 2 different offices. An example is shown below. According to the two rows shown below, it looks like David S Frockt was running for State Representative but then switched to State Senator based on the numbering of the filerid. With some quick research, we found that David Frockt was a State Representative in 2010 but was elected as State Senator in the middle of 2011 after the death of Senator Scott White. This special situation would explains the discrepancy with the dataset. 
+After creating the new dataframe with only the unique candidate rows, something strange occured where we ended up 141 rows instead of the expected 134. By doing a summary of `filername` variable, we can see that there are 7 candidates that have more than 1 row. Upon inspection, these 7 candidates each have 2 different `filerids` and had two different offices associated with them. An example is shown below. According to the two rows shown below, it looks like David S Frockt was running for State Representative but then switched to State Senator based on the numbering of the `filerid`. With some quick research, we found that David Frockt was a State Representative in 2010 but was elected as State Senator in the middle of 2011 after the death of Senator Scott White. This is very much a special situation, and it appears to have happened 7 times in our data set. We learned that candidates can apply for a different position within the time period of our sample.
 
 ```{R}
 # Show exmaple of duplicate candidate.
 Office[Office$filername == "FROCKT DAVID S",]
 ```
 
-Because when a candidate changes his mind and decides to go for a different office, it still reflects the popularity of both offices. Besides, we do not have to data to determine which of these offices the candidate ended up running for so I will keep these the dataset as 141 rows and not remove any duplicate candidate for the histogram.
+Though we found these 7 instances where a candidate ran for two different positions within our sample, we did not feel the need to screen out these 7 candidates because we are only looking for the approxiate number of applicants for each position instead of exact values. We are only using the `DebtLeft` table to gain some insight on the `Debt` table so an approximate representation is all we want. Furthermore, there is no indication that screening out those candidates altogether, or only keeping one of their rows would result in a more accurate representation.
 
 ```{R}
 # Create Dataframe showing the number of candidates running for each office
 OfficePopularity <- aggregate(filername ~ office, Office, length)
 colnames(OfficePopularity)[2] <- "N"
+OfficePopularity <- OfficePopularity[order(OfficePopularity[,2], decreasing = TRUE),]
 
 # Show barplot of results
 op <- par(mar = c(10,4,4,2) + 0.1)
@@ -264,41 +270,79 @@ barplot(OfficePopularity$N, main = "Number of Candidates Running for Each Office
       names.arg=OfficePopularity$office, las = 2, cex.names=0.6)
 par(op)
 ```
+The bar chart aboves shows that most of the candidates in our sampel are running for the State Representative position. This might be because there at 10 chairs open in the state of Washington compared to the 2 chairs open for the position of state senator. There is only 1 chair open for state auditor, but even so, it does not seem to be a highly contended position based on our sample.
 
 ### Which party has the most candidates running for office?
-Now we will start looking at the data in the second data set (the one with vendor information and debt amount). We have no way of knowing which debt report was filed by which candidate and we know from above that one candidate can file multiple reports. However, assuming that each candidate will have a unique combination of office, legislative dictrict, position, party, and jurisdiction, we can find the rows that are unique for all of these categories and assume each row is a candidate. Now we can plot a bar chart to get a sense of how many cadidates for each party are filing these debt reports.
+Now we will start looking at the data in the `Debt` table (the one with vendor information and debt amount). We have no way of knowing which debt report was filed by which candidate and we know from our `DebtLeft` analysis above, that one candidate can file multiple reports. However, assuming that each candidate will have a unique combination of office, legislative dictrict, position, party, and jurisdiction, we can find the rows that are unique for all of these categories and assume each row is a candidate. Now we can plot a bar chart to get a sense of how many cadidates for each party are filing these debt reports.
 
 ```{R}
 # Only keep Office2, legislativedictrict, position, party, jurisdiction and find unique rows
 DebtUnique <- unique(Debt[1:5])
-# 
+# Aggregate a new dataframe to store the number of rows for each party
 PartyCount <- aggregate(jurisdiction ~ party, DebtUnique, length)
 colnames(PartyCount)[2] <- "N"
-#
+PartyCount <- PartyCount[order(PartyCount[,2], decreasing = TRUE),]
+# Plot a bar chart showing the number of rows for each party
 op <- par(mar = c(5,4,4,2) + 0.1)
 barplot(PartyCount$N, main = "Number of Candidates from each Party", ylab = "# of Cadidates",
       names.arg=PartyCount$party, las = 2, cex.names=0.6)
 par(op)
 ```
-As mentioned before, the two data sets are really different and both are very innacurate. So the only thing we can get out of this bar chart is that there are mostly Democratic Candidates running for offices in Washington State.
+Above, we are assuming that we have successfully filtered the dataset to one row per candidate but it is possible that two democrats are running for the exact same office in the exact same district, jurisdiction, and position, in which case they would be grouped as a single data point. However, regardless of the previous point, we think it is safe to claim that in our sample, the majority of our candidates are from the Democratic party, which makes sense since Washington is a blue state. However, since the number of republican and non-partisan candidates are very similar, we cannot claim which one has more candidates because of the uncertainty of our row manipulation.
+
+### Barplot of the debtdate by year-month
+
+The next item we will analyze is the `debtdate` variable which is defined as the date that the debt was incurred. However, looking at the count of each date may be too discrete. Instead we can group them by month and year for easier visualization. 
+
+```{R}
+# Copy Debt into a temporary df, but convert the debtdate variable into date object
+DebtTemp <- Debt
+DebtTemp$debtdate <- as.Date(DebtTemp$debtdate, format='%m/%d/%y')
+# Import lubridate to round the dates to the month
+library(lubridate)
+DebtTemp$debtdate <- floor_date(DebtTemp$debtdate, unit = "month")
+# Aggregate the data to show the amount of line items are in each month
+DateCount <- aggregate(amount ~ debtdate, DebtTemp, length)
+colnames(DateCount)[2] <- "N"
+op <- par(mar = c(5,4,4,2) + 0.1)
+barplot(DateCount$N, main = "Number of Line Items in each Year-Month Bucket", ylab = "Frequency",
+      names.arg=DateCount$debtdate, las = 2, cex.names=0.6)
+par(op)
+```
+
+From the barplot shown above, we can observe that in our sample, the number of line items are increased as we apprach the election date. This might suggest increased spending but we are not yet able to make that claim until we look at the debt amount over time in the bivariate analysis section.
 
 ### Histogram of the debt amount
+
+Finally we have reached the univariate analysis of our debt `amount` variable.
+
 ```{R}
 summary(Debt$amount)
 ```
-Very strong skew to the right.
+Before we plot the histogram, we took a look at the summary of this sampel. As noted above, the minimum debt reported was \$3.24 while the maximum debt reported was \$19,000. The median debt amount was \$400 while the mean was much higher at \$1387.59. This suggests a very strong skew to the right of the distribution and it is likely that the \$19,000 amount is an outlier.
 
 ```{R}
-hist(Debt$amount, breaks = seq(0, 20000, by = 100) , main = "Histogram of the Amount of Dollars per Debt Report Filed",
-     xlab = "Debt Amount per Report ($)", las = 2)
+hist(Debt$amount, breaks = seq(0, 20000, by = 100) , main = "Histogram of the Amount of Dollars per Line Item",
+     xlab = "Debt Amount per Line Item ($)", las = 2)
 axis(1, at = seq(0, 20000, by = 1000), las = 2)
 ```
+
+The first thing to do is to take a look at the histogram without filtering out any data. We can see that most of the data is between 0 and 2000 dollars while there are some outliers that fall above 2500 dollars. 
+
 ```{R}
-filteredAmount <- Debt[(Debt$amount < 4000),]
-hist(filteredAmount$amount, breaks = seq(0, 4000, by = 100) , main = "Histogram of the Amount of Dollars per Debt Report Filed",
-     xlab = "Debt Amount per Report ($)", las = 2)
-axis(1, at = seq(0, 4000, by = 1000), las = 2)
+boxplot(Debt$amount, horizontal = TRUE, outline = FALSE, axes = FALSE, staplewex = 1)
+text(x = boxplot.stats(Debt$amount)$stats, labels = boxplot.stats(Debt$amount)$stats, y=1.25, cex = 0.6)
 ```
+Generating a boxplot without the outliers as shown above lets us know that the bulk of the data is between 0 and 2500 dollars. Therefore, we can replot the histogram with these new bounds.
+
+```{R}
+filteredAmount <- Debt[(Debt$amount < 2500),]
+hist(filteredAmount$amount, breaks = seq(0, 2500, by = 100) , main = "Histogram of the Amount of Dollars per Line Item",
+     xlab = "Debt Amount per Line Item ($)", las = 2)
+axis(1, at = seq(0, 2500, by = 100), las = 2)
+```
+In this new histogram, we have a clearer view of the distribution of the bulk of our sample. Most notably, we see that most of our line items are reporting a debt between 200 and 300 dollars. We will revisit this point in the bivariate analysis to see what candidates are spending money on that costs between 200 and 300 dollars.
+
 ## Analysis of Key Relationships
 
 Key relationships...
