@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction
 
-As members of the campaign committee for the upcoming Washinton state election, we are interested in the nature of debt that candidates for office have taken on in past elections. This report contains the findings of our initial exploratory data analysis of a dataset from the 2012 election.
+As members of the campaign committee for the upcoming Washington state election, we are interested in the nature of debt that candidates for office have taken on in past elections. This report contains the findings of our initial exploratory data analysis of a dataset from the 2012 election.
 
 **Research question**: How can the amount of debt taken on by candidates in the 2012 Washington state election be understood in relation to all of the other available fields in this data set?
 
@@ -27,7 +27,7 @@ First, we use R to load the data set in the ``DebtRaw`` variable, treating the s
 DebtRaw = read.csv("../dataset/CandidateDebt.csv", na.strings='#N/A')
 ```
 
-This initial dataset has 28 columns and 1043 rows
+This initial dataset has 28 columns and 1043 rows.
 
 ```{r}
 print(sprintf("Number of columns: %d, Number of rows: %d", ncol(DebtRaw), nrow(DebtRaw)))
@@ -39,7 +39,7 @@ Next, we examine the first 4 rows of the dataset across all columns
 str(DebtRaw[1:4,])
 ```
 
-Based on the column names, factor levels, and values it appears that the columns of this data set are well aligned over the first 9 columns (`reportnumber` through `office`). There seems to be an alignment error, However, beginning with the `legislativedistrict` column. The first factor level of this column, `"ATTORNEY GENERAL"`, is not sensible as a legislative district. Instead we expect legislative districts to be identified by an integer, as is the case for the column immediatly after `legislativedistrict`
+Based on the column names, factor levels, and values it appears that the columns of this data set are well aligned over the first 9 columns (`reportnumber` through `office`). There seems to be an alignment error, However, beginning with the `legislativedistrict` column. The first factor level of this column, `"ATTORNEY GENERAL"`, is not sensible as a legislative district. Instead we expect legislative districts to be identified by integers, as is the case for the column immediatly after `legislativedistrict`.
 
 After careful examination, it is clear that the column labels from `legislativedistrict` all the way through `vendorstate` should all be shifted forward by one position. In this shift we remove the trailing `vendorzip` label, which is appropriate since we do not have any data columns consistent with zip codes.  We must also introduce a new label for the data column previously labeled by `jurisdiction`. We will choose the name `DUMMY` for the time being, and will introduce a more meaningful name once we have identified the column's contents.
 
@@ -50,7 +50,7 @@ colnames(DebtShifted) <- c(colnames(DebtRaw)[1:9],
                            colnames(DebtRaw)[10:(ncol(DebtRaw)-1)])
 ```
 
-We once examine the first 4 rows of the data set, and note that the column labels are now well aligned with the data columns. We discuss the columns in more detail in the following section.
+We once again examine the first 4 rows of the data set, and note that the column labels are now well aligned with the data columns. We discuss the columns in more detail in the following section.
 ```{r}
 str(DebtShifted[1:4,])
 ```
@@ -64,7 +64,7 @@ The variables `fromdate`, `thrudate`, and `debtdate` are factors that represent 
 ```
 
 ### Describe variables
-Next, an brief overview of these 28 variables. The initial description in *italics* is the description provided in the `CandidateDebt.pdf` documentation provided alongside the dataset.
+Next, a brief overview of these 28 variables. The initial description in *italics* is the description provided in the `CandidateDebt.pdf` documentation provided alongside the dataset.
 
  - `reportnumber`: *identifier used for tracking the individual form* \
  This contains integers with values like 100495995, 100496548, etc. It contains no duplicate or missing values.
@@ -73,7 +73,7 @@ Next, an brief overview of these 28 variables. The initial description in *itali
  Factor with a single level, `B.3`, that contains no missing values.
 
  - `filerid`: *The unique id assigned to a candidate* \
- Unique candidate id string that is somewhat based on the candidates name. Of the 1043 rows, there are only 141 unique  `filerid` values. There are no missing values.
+ Unique candidate id string that is somewhat based on the candidate's name. Of the 1043 rows, there are only 141 unique  `filerid` values. There are no missing values.
  
  - `filertype`: *Indicates if this record is for a candidate* \
  Factor with a single level, `Candidate`, that contains no missing values.
@@ -119,7 +119,7 @@ Next, an brief overview of these 28 variables. The initial description in *itali
  The election year is the repeated integer 2012, with 56 missing values.
  
  - `amount`: *The amount of the debt incurred or order placed* \
- Floating point values representing the debt incurred in dollars.
+ Floating point values representing the debt or spending incurred in dollars.
  Values range from 3.24 to 19000.00 and there are 56 missing values.
  
  - `recordtype`: *This field designates the item as a debt* \
@@ -154,19 +154,26 @@ Next, an brief overview of these 28 variables. The initial description in *itali
  There are 4 unique values: `WA`, `DC`, `TX`, `CA`. There are 56 missing values and an additional 25 empty values.
 
 ### Examine row alignment
-Then examine some of the rows (example of one that lines up and one that does not)
+Next, we examine select columns from the first row of the data set.
 
-Then example of one that appears to be out of order (Jill Johnson)
+```{r}
+t(DebtShifted[1,c('filerid', 'filername', 'office', 'DUMMY', 'legislativedistrict', 'party', 'jurisdiction', 'jurisdictiontype')])
+```
 
-Then discussion of the repititions in the right. But amount always repeats with all of the other columns.
+Notice that the `office` column indicates that Cindy Ryu ran for `"STATE REPRESENTATIVE"`. The `jurisdiction` and `party` columns indicate that she ran for state senate as a Republican in district 1.  However, a quick wikipedia search shows that Cindy Ryu atually ran for state representative in 2012 as a Democrat in district 32.
 
-It seems that left and right are two tables that are not (generally) aligned. Given rows that align and Jill Johnson
+After careful examination of many individual rows, we have concluded that the values for each row are self consistent from `reportnumber` through `office` (e.g. Candidate with `filername` of `"RYU CINDY S"` did run for the `office` of `"STATE REPRESENTATIVE"`), but they are inconsistent from `DUMMY` through `vendorstate` (Cindy Ryu did not have `party` of `"REPUBLICAN"` and run with `jurisdiction` of `"LEG DISTRICT 01 - SENATE"`).
 
-Speculate that some form of malformed SQL join introduced the duplicates.
+The columns from `DUMMY` through `vendorstate` also exhibit peculiar repition and missing value behavior. All of these colums have 56 missing values, and they occur in the same 56 rows. In contrast, there are no missing values in the columns before ``DUMMY`. Also, there are many rows that have distinct values from `reportnumber` through `office` but identical values from `DUMMY` through `vendorstate`.
 
-We will look at the right table only, with duplicates removed. Note that this assumes that we don't have valid identical transactions on identical days.
+Based on these missing value and repitition observations, and the need to introduce the `DUMMY` column in the first place, we speculate that this data set is actually the combination of two separate data sets that are improperly aligned, perhaps as the result of an errant SQL join.  We further conclude that there is not sufficient information available to realign these two data sets.
 
-### Split data set and remove duplicates
+To move forward, we will define two new data sets
+
+ 1. `DebtLeft` will include all rows for the columns from `reportnumber` through `office`.
+ 
+ 2. `DebtRight` will include the unique, non-missing, rows for the columns from `DUMMY` through `vendorstate`. Additionally, we will rename `DUMMY` to `office` in `DebtRight`, since it has a nearly identical set of factor levels as `office` in `DebtLeft`, and seems to serve the same purpose.
+
 ```{r}
 # Split off left table
 DebtLeft = DebtShifted[, seq(9)]
