@@ -157,7 +157,8 @@ Next, a brief overview of these 28 variables. The initial description in *italic
 Next, we examine select columns from the first row of the data set.
 
 ```{r}
-t(DebtShifted[1,c('filerid', 'filername', 'office', 'DUMMY', 'legislativedistrict', 'party', 'jurisdiction', 'jurisdictiontype')])
+t(DebtShifted[1,c('filerid', 'filername', 'office', 'DUMMY', 'legislativedistrict',
+                  'party', 'jurisdiction', 'jurisdictiontype')])
 ```
 
 Notice that the `office` column indicates that Cindy Ryu ran for `"STATE REPRESENTATIVE"`. The `jurisdiction` and `party` columns indicate that she ran for state senate as a Republican in district 1.  However, a quick wikipedia search shows that Cindy Ryu atually ran for state representative in 2012 as a Democrat in district 32.
@@ -172,12 +173,18 @@ To move forward, we will define two new data sets
 
  1. `DebtLeft` will include all rows for the columns from `reportnumber` through `office`.
  
- 2. `DebtRight` will include the unique, non-missing, rows for the columns from `DUMMY` through `vendorstate`. Additionally, we will rename `DUMMY` to `office` in `DebtRight`, since it has a nearly identical set of factor levels as `office` in `DebtLeft`, and seems to serve the same purpose.
-
 ```{r}
 # Split off left table
 DebtLeft = DebtShifted[, seq(9)]
 
+# Print out number of rows and columns
+print(sprintf("DebtLeft data set has %d columns and %d rows.", ncol(DebtLeft), nrow(DebtLeft)))
+```
+
+
+ 2. `Debt` will include the unique, non-missing, rows for the columns from `DUMMY` through `vendorstate`. Additionally, we will rename `DUMMY` to `office` in `Debt`, since it has a nearly identical set of factor levels as `office` in `DebtLeft`, and seems to serve the same purpose.
+
+```{r}
 # Split off right table
 DebtRight = DebtShifted[, seq(10, ncol(DebtRaw))]
 
@@ -189,9 +196,12 @@ DebtRightValid <- DebtRight[rowSums(!is.na(DebtRight)) > 0,]
 
 # Drop duplicates
 Debt <- unique(DebtRightValid)
+
+# Print number of rows and columns
+print(sprintf("Debt data set has %d columns and %d rows.", ncol(Debt), nrow(Debt)))
 ```
 
-After cleaning steps above, we're left with 194 observations over 19 variables
+While we will explore both `Debt` and `DebtLeft` in the analysis to follow, the `Debt` data set is of more utility to us because it contains `amount`, the target variable of this analysis.
 
 ## Univariate Analysis of Key Variables
 
