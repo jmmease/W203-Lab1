@@ -366,7 +366,6 @@ amountbycoarsedesc <- amountbycoarsedesc[order(amountbycoarsedesc$amount, decrea
 
 nbars=14
 topn=amountbycoarsedesc[1:nbars,]
-?barplot
 # bar plot tutorial https://www.statmethods.net/graphs/bar.html
 barplot(topn$amount, main="Total Expenditures by Coarse Description",
         sub=paste(c("(Top", nbars, "shown)"), collapse = " "),
@@ -497,7 +496,6 @@ The small dataset size of 194 total points, and the disparate number of points b
 
 ```{r}
 
-?boxplot
 # Expenditure amounts by jurisdictiontype
 boxplot(amount~jurisdictiontype,data=Debt2, main="Transaction Dollar Amounts by Jurisdiction Type", 
   	xlab="Jurisdiction Type", ylab="Amount in Dollars", varwidth=T)
@@ -522,7 +520,6 @@ Figures 15-17 show expenditures attributable to the 2012 election as far back as
 
 ```{r}
 # Time component
-
 # Copy Debt2 to Debt3
 Debt3 <- Debt2
 
