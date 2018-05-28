@@ -214,7 +214,7 @@ colnames(RepPerCan)[2] <- "NumOfReports"
 summary(RepPerCan$NumOfReports)
 ```
 
-Before looking at the histogram, we decided to take a look at the 5 candidates that filed the most reports as shown below. Unfortunately, our dataset does not allow us to determine which candidates occured the most debt. Because of the misalignemnt with the two halves of our dataset, we can only get a sense of which candidates filed the most debt reports. Furthermore, it is very possible that our dataset is missing a lot of debt reports so these results are only reflective of the sample we received.
+Before looking at the histogram, we decided to take a look at the 5 candidates that filed the most reports as shown below. Unfortunately, our dataset does not allow us to determine which candidates incurred the most debt. Because of the misalignemnt with the two halves of our dataset, we can only get a sense of which candidates filed the most debt reports. Furthermore, it is very possible that our dataset is missing a lot of debt reports so these results are only reflective of the sample we received.
 
 ```{r}
 # Show top 5 candidates that filed the most reports
