@@ -12,8 +12,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, tidy.opts=list(width.cutoff=60),tidy=TRUE)
-#opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
+knitr::opts_chunk$set(echo = TRUE, tidy=FALSE)
 ```
 
 ## Introduction
@@ -232,7 +231,7 @@ Because of the strong skew towards the right of the data set, we are expecting t
 length(which(RepPerCan$NumOfReports == 1))
 ```
 
-The figure below is a histogram showing the number of reports filed by each candidate and it confirms that there is indeed a skew towards the right of the distribution. We can conclude that most candidates filed between 1 and 5 reports, very few filed over 20 reports, and 1 filed 38 reports.
+Figure 1 is a histogram showing the number of reports filed by each candidate and it confirms that there is indeed a skew towards the right of the distribution. We can conclude that most candidates filed between 1 and 5 reports, very few filed over 20 reports, and 1 filed 38 reports.
 
 ```{r fig.align="center", fig.cap="Histogram of number of reports by Candidate"}
 # Show histogram showing distribution of the number of reports filed by each candidate.
@@ -278,10 +277,10 @@ barplot(OfficePopularity$N,
       names.arg=OfficePopularity$office, las = 2, cex.names=0.6)
 par(op)
 ```
-The bar chart above shows that most of the candidates in our sample are running for the State Representative position. This might be because there at 10 chairs open in the state of Washington compared to the 2 chairs open for the position of state senator. There is only 1 chair open for state auditor, but even so, it does not seem to be a highly contended position based on our sample.
+The bar chart in Figure 2 shows that most of the candidates in our sample are running for the State Representative position. This might be because there at 10 chairs open in the state of Washington compared to the 2 chairs open for the position of state senator. There is only 1 chair open for state auditor, but even so, it does not seem to be a highly contended position based on our sample.
 
 ### Which party has the most candidates running for office?
-Now we will start looking at the data in the `Debt` table (the one with vendor information and debt amount). We have no way of knowing which debt report was filed by which candidate and we know from our `DebtLeft` analysis above, that one candidate can file multiple reports. However, assuming that each candidate will have a unique combination of office, legislative district, position, party, and jurisdiction, we can find the rows that are unique for all of these categories and assume each row is a candidate. Now we can plot a bar chart to get a sense of how many candidates for each party are filing these debt reports.
+Now we will start looking at the data in the `Debt` table (the one with vendor information and debt amount). We have no way of knowing which debt report was filed by which candidate and we know from our `DebtLeft` analysis above, that one candidate can file multiple reports. However, assuming that each candidate will have a unique combination of office, legislative district, position, party, and jurisdiction, we can find the rows that are unique for all of these categories and assume each row is a candidate. In Figure 3 we plot a bar chart to get a sense of how many candidates for each party are filing these debt reports.
 
 ```{R fig.align="center", fig.cap="Number of candidates by party"}
 # Only keep Office2, legislativedictrict, position, party,
@@ -299,7 +298,7 @@ barplot(PartyCount$N,
         names.arg=PartyCount$party, las = 2, cex.names=0.6)
 par(op)
 ```
-Above, we are assuming that we have successfully filtered the data set to one row per candidate but it is possible that two democrats are running for the exact same office in the exact same district, jurisdiction, and position, in which case they would be grouped as a single data point. However, regardless of the previous point, we think it is safe to claim that in our sample, the majority of our candidates are from the Democratic party, which makes sense since Washington is a blue state. However, since the number of republican and non-partisan candidates are very similar, we cannot claim which one has more candidates because of the uncertainty of our row manipulation.
+Here we are assuming that we have successfully filtered the data set to one row per candidate but it is possible that two democrats are running for the exact same office in the exact same district, jurisdiction, and position, in which case they would be grouped as a single data point. However, regardless of the previous point, we think it is safe to claim that in our sample, the majority of our candidates are from the Democratic party, which makes sense since Washington is a blue state. However, since the number of republican and non-partisan candidates are very similar, we cannot claim which one has more candidates because of the uncertainty of our row manipulation.
 
 ### When did candidates incur debt?
 
@@ -327,7 +326,7 @@ barplot(DateCount$N,
 par(op)
 ```
 
-From the bar plot shown above, we can observe that in our sample, the number of line items are increased as we approach the election date. This might suggest increased spending but we are not yet able to make that claim until we look at the debt amount over time in the bivariate analysis section.
+From the bar plot in Figure 4 we can observe that in our sample the number of line items are increased as we approach the election date. This might suggest increased spending but we are not yet able to make that claim until we look at the debt amount over time in the bivariate analysis section.
 
 ### How much debt did candidates disclose per report?
 
@@ -345,14 +344,14 @@ hist(Debt$amount, breaks = seq(0, 20000, by = 100),
 axis(1, at = seq(0, 20000, by = 1000), las = 2)
 ```
 
-The first thing to do is to take a look at the histogram without filtering out any data. We can see that most of the data is between 0 and 2000 dollars while there are some outliers that fall above 2500 dollars. 
+Figure 5 shows the histogram without filtering out any data. We can see that most of the data is between 0 and 2000 dollars while there are some outliers that fall above 2500 dollars. 
 
 ```{R fig.align="center", fig.cap="Box plot of debt amount"}
 boxplot(Debt$amount, horizontal = TRUE, outline = FALSE, axes = FALSE, staplewex = 1)
 text(x = boxplot.stats(Debt$amount)$stats,
      labels = boxplot.stats(Debt$amount)$stats, y=1.25, cex = 0.6)
 ```
-Generating a box plot without the outliers as shown above lets us know that the bulk of the data is between 0 and 2500 dollars. Therefore, we can replot the histogram with these new bounds.
+Generating a box plot without the outliers as shown in Figure 6 lets us see that the bulk of the data is between 0 and 2500 dollars. Therefore, in Figure 7 we replot the histogram with these new bounds.
 
 ```{R fig.align="center", fig.cap="Histogram of dollars per line item (outliers excluded)"}
 filteredAmount <- Debt[(Debt$amount < 2500),]
@@ -380,7 +379,8 @@ amountbyparty <- amountbyparty[order(amountbyparty$totalamountbyparty, decreasin
 # bar plot tutorial https://www.statmethods.net/graphs/bar.html
 par(mar=c(5,7,4,2)+0.1)
 barplot(amountbyparty$totalamountbyparty, main="Total Expenditures by Political Party", 
-  	xlab="Political Party", ylab="", las=1, names.arg=amountbyparty$party)
+  	xlab="Political Party", ylab="", las=1, 
+  	names.arg=amountbyparty$party, cex.names=0.6)
 mtext("Total Party Expenditure ($)",side=2,line=5)
 ```
 
@@ -393,19 +393,14 @@ amountbyparty$amountpercandidate <- amountbyparty$totalamountbyparty / amountbyp
 
 # sort the list descending, create pareto
 amountbyparty <- amountbyparty[order(amountbyparty$amountpercandidate, decreasing=TRUE),]
-
-
-# bar plot tutorial https://www.statmethods.net/graphs/bar.html
 par(mar=c(5,6,4,2)+0.1)
-barplot(amountbyparty$amountpercandidate, main="Expenditure per Candidate by Political Party", 
-  	xlab="Political Party", ylab="", las=1,
-  	names.arg=amountbyparty$party)
+barplot(amountbyparty$amountpercandidate,
+        main="Expenditure per Candidate by Political Party", 
+        xlab="Political Party", ylab="", las=1,
+        names.arg=amountbyparty$party, cex.names=0.6)
 mtext("Expenditure per Candidate ($)",side=2,line=4)
-
-
 ```
 Interestingly, the amounts of money spent per candidate by party have the same relative order as the total amounts spent by party, though the differences in magnitude are greatly reduced. Both Figures 8 and 9 hint that Washington state politics are dominated by Democrats.
-
 
 ### Where is the money going?
 
@@ -415,8 +410,9 @@ Since the `description` data were too granular, and since the `code` data were t
 
 A pareto of total expenditure by `coarsedescription` is shown in Figure 10.  The total for a given `coarsedescription` is computed simply by summing the values in the `amount` column for all records having that `coarsedescription`.  The pareto includes only those `coarsedescription` values whose sum of `amount` values exceeds 1% of grand total expenditures, so 13 of the 23 `coarsedescription` values are shown.
 
-```{r fig.align="center", fig.cap="Total expenditure by coarse description", tidy=TRUE, tidy.opts=list(width.cutoff=60)}
-desc_to_coarsedesc = read.csv("../dataset/description_to_coarsedescription.csv", na.strings='#N/A')
+```{r fig.align="center", fig.cap="Total expenditure by coarse description"}
+desc_to_coarsedesc = read.csv("../dataset/description_to_coarsedescription.csv",
+                              na.strings='#N/A')
 # we need to merge coarsedescription into Debt by description
 Debt2=merge(Debt,desc_to_coarsedesc[c('description','coarsedescription')])
 
@@ -425,7 +421,9 @@ Debt2$position[is.na(Debt2$position)] <- 0
 Debt2$legislativedistrict[is.na(Debt2$legislativedistrict)] <- 0
 
 # sum amount by coarsedescription
-amountbycoarsedesc <-aggregate(Debt2['amount'], by=list(coarsedescription=Debt2$coarsedescription), FUN=sum)
+amountbycoarsedesc <-aggregate(Debt2['amount'],
+                               by=list(coarsedescription=Debt2$coarsedescription),
+                               FUN=sum)
 
 #format method, which is necessary for formating in a data.frame   
 format.money  <- function(x, ...) {
@@ -434,10 +432,10 @@ format.money  <- function(x, ...) {
 class(amountbycoarsedesc$amount) <- c("money",class(amountbycoarsedesc$amount))
 
 # sort the list descending, create pareto
-amountbycoarsedesc <- amountbycoarsedesc[order(amountbycoarsedesc$amount, decreasing=TRUE),]
+amountbycoarsedesc <- amountbycoarsedesc[order(amountbycoarsedesc$amount,
+                                               decreasing=TRUE),]
 nbars=13
 topn=amountbycoarsedesc[1:nbars,]
-# bar plot tutorial https://www.statmethods.net/graphs/bar.html
 par(mar=c(10,6,3,2)+0.1)
 barplot(topn$amount, main="Total Expenditures by Coarse Description",
           	xlab="",
@@ -445,11 +443,7 @@ barplot(topn$amount, main="Total Expenditures by Coarse Description",
   	cex.names=0.65, las=2)
 mtext("Total Expenditure ($)",side=2,line=5)
 mtext("Coarse Description",side=1,line=9)
-
-
 ```
-
-
 
 ### For Which Types of Offices is the Most Money Spent?
 
@@ -458,21 +452,18 @@ An analysis of amount of expenditure by office was performed by summing the amou
 The pareto shows that the race for governor had the greatest expenditure per candidate.  Two other statewide offices, treasurer and attorney general, showed the next highest expenditures per candidate.  This seems reasonable, since candidates for these offices must campaign in the entire state, vs. within a single legislative district.
 
 ```{r fig.align="center", fig.cap="Expenditure per candidate by office"}
-# get sum of amount by DUMMY
-#sumbyoffice <- aggregate(Debt2['amount'],
-#by=list(office=Debt2$DUMMY), FUN=sum)
-
-# get sum(amount) and n rows by unique value of DUMMY, legislativedistrict, position, and party,
-# jurisdiction, and jurisdictiontype (in case I summarize by that later).
 sumbycand <- aggregate(Debt2['amount'],
-by=list(office=Debt2$office, legislativedistrict=Debt2$legislativedistrict,
-position=Debt2$position, party=Debt2$party, jurisdiction=Debt2$jurisdiction, jurisdictiontype=Debt2$jurisdictiontype), FUN=sum)
-
+by=list(office=Debt2$office,
+        legislativedistrict=Debt2$legislativedistrict,
+        position=Debt2$position, party=Debt2$party,
+        jurisdiction=Debt2$jurisdiction,
+        jurisdictiontype=Debt2$jurisdictiontype), FUN=sum)
 
 # now sum the amounts in sumbycand and count rows by office
-sumbyoffice <- aggregate(sumbycand['amount'], by=list(office=sumbycand$office), FUN=sum)
-countbyoffice <- aggregate(sumbycand['position'], by=list(office=sumbycand$office),
-FUN=length)
+sumbyoffice <- aggregate(sumbycand['amount'],
+                         by=list(office=sumbycand$office), FUN=sum)
+countbyoffice <- aggregate(sumbycand['position'],
+                           by=list(office=sumbycand$office), FUN=length)
 
 # Rename cols
 names(sumbyoffice)[names(sumbyoffice)=="amount"] <- "totalamount"
@@ -507,8 +498,8 @@ The small dataset size of 194 total points, and the disparate number of points b
 ```{r fig.align="center", fig.cap="Transaction amounts by Juridiction Type"}
 # Expenditure amounts by jurisdictiontype
 boxplot(amount~jurisdictiontype,data=Debt2,
-main="Transaction Dollar Amounts by Jurisdiction Type", 
-xlab="Jurisdiction Type", ylab="Amount in Dollars", varwidth=T)
+        main="Transaction Dollar Amounts by Jurisdiction Type", 
+  	xlab="Jurisdiction Type", ylab="Amount in Dollars", varwidth=T)
 ```
 
 ### Do Expenditures Change with Time?
@@ -534,9 +525,10 @@ Debt3$Treasury<-ifelse(Debt3$coarsedescription=="TREASURY",1,0)
 
 # Now get sum, count, and mean of amount and mean of Treasury by debtmonthstr
 ##summarize data. Because R categorized Day as a factor we can go ahead and use this
-timestats<- ddply(Debt3,~debtmonthstr,summarise,Sum_amount=sum(amount),
-Count_amount = length(amount), Mean_amount = mean(amount),
-Mean_Treasury = mean(Treasury))
+timestats<- ddply(Debt3,~debtmonthstr,summarise, Sum_amount=sum(amount),
+                  Count_amount = length(amount),
+                  Mean_amount = mean(amount),
+                  Mean_Treasury = mean(Treasury))
 #Create debtmonth in timestats, as a date (this works but format is not good for graphing)
 timestats$debtmonth<- strptime(timestats$debtmonthstr,"%Y-%m-%d")
 # sort by it
@@ -547,22 +539,21 @@ yvector=timestats$Sum_amount
 yvector2=timestats$Count_amount
 yvector3=timestats$Mean_amount
 ```
-```{r fig.align="center", fig.cap="Sum of amount by debt month"}
+```{r fig.align="center", fig.height=3, fig.cap="Sum of amount by debt month"}
 plot(xvector, yvector,xlab="Month Debt Incurred",
-ylab="Sum of Expenditures ($)", main="Sum of Amount")
+     ylab="Sum of Expenditures ($)", main="Sum of Amount")
 ```
-```{r fig.align="center", fig.cap="Count of expenditures by debt month"}
+```{r fig.align="center", fig.height=3, fig.cap="Count of expenditures by debt month"}
 plot(xvector, yvector2,xlab="Month Debt Incurred",
-ylab="Number of Expenditures ($)", main="Count of Amount")
+     ylab="Number of Expenditures ($)", main="Count of Amount")
 ```
-```{r fig.align="center", fig.cap="Average amount by debt month"}
+```{r fig.align="center", fig.height=3, fig.cap="Average amount by debt month"}
 plot(xvector, yvector3,xlab="Month Debt Incurred",
-ylab="Mean of Expenditures ($)", main="Mean of Amount")
+     ylab="Mean of Expenditures ($)", main="Mean of Amount")
 ```
 
 ## Analysis of Secondary Effects
 We now extend a few of the bivariate relationships discussed above with a secondary variable that deepens our understanding of the primary relationship.
-
 
 ### Do the parties spend their money differently?
 
@@ -570,33 +561,46 @@ The expenditures by coarse description can be broken down by political party to 
 
 Figure 16 shows a pareto of fraction of total expenditure by coarse description, by party.  The same `coarsedescription` used to generate Figure 10 were used.  The data reveal that Democrats and Non-partisan candidates spent a greater fraction of money on consulting than the Republicans, while Republicans spent a greater fraction on credit card payments and telecom expenses.  Unfortunately, there is no visibility into what purchases were made using the credit cards (the raw `description` column just named the credit card (e.g., AMEX, VISA), so it provides no additional information, either.)
 
-```{r}
+```{r fig.align="center", fig.height=6, fig.cap="Fraction of party expenditure by coarse description, by party"}
 # Rename "subject" column to "N"
 names(amountbyparty)[names(amountbyparty)=="amount"] <- "totalamountbyparty"
 #rollup debt2 by coarsedesc and party
-expense_by_coarsedesc_by_party <-aggregate(Debt2['amount'], by=list(coarsedescription=Debt2$coarsedescription, party=Debt2$party), FUN=sum)
+expense_by_coarsedesc_by_party <-
+  aggregate(Debt2['amount'], by=list(coarsedescription=Debt2$coarsedescription,
+                                     party=Debt2$party), FUN=sum)
 #merge totalamount into expense_by_coarsedesc_by_party
 frac_by_coarsedesc_by_party <- merge(expense_by_coarsedesc_by_party,amountbyparty)
 # compute fraction
-frac_by_coarsedesc_by_party$fractionofpartytotal <- frac_by_coarsedesc_by_party$amount / frac_by_coarsedesc_by_party$totalamountbyparty
+frac_by_coarsedesc_by_party$fractionofpartytotal <- 
+  frac_by_coarsedesc_by_party$amount / frac_by_coarsedesc_by_party$totalamountbyparty
 # drop independents
-frac_by_coarsedesc_by_party <- frac_by_coarsedesc_by_party[frac_by_coarsedesc_by_party$party != "INDEPENDENT", ]
+frac_by_coarsedesc_by_party <-
+  frac_by_coarsedesc_by_party[frac_by_coarsedesc_by_party$party != "INDEPENDENT", ]
 # get max frac by coarsedescription (across parties)
-maxfrac_by_coarsedesc <-aggregate(frac_by_coarsedesc_by_party['fractionofpartytotal'],
-                                           by=list(coarsedescription=frac_by_coarsedesc_by_party$coarsedescription), FUN=max)
+maxfrac_by_coarsedesc <-
+  aggregate(frac_by_coarsedesc_by_party['fractionofpartytotal'], 
+            by=list(coarsedescription=frac_by_coarsedesc_by_party$coarsedescription),
+            FUN=max)
 # Rename "fractionofpartytotal" column to "maxfracofpartytotal"
-names(maxfrac_by_coarsedesc)[names(maxfrac_by_coarsedesc)=="fractionofpartytotal"] <- "maxfracofpartytotal"
+names(maxfrac_by_coarsedesc)[
+  names(maxfrac_by_coarsedesc)=="fractionofpartytotal"] <- "maxfracofpartytotal"
+
 #merge maxfrac into frac_by_coarsedesc_by_party
 frac_by_coarsedesc_by_party2=merge(frac_by_coarsedesc_by_party,maxfrac_by_coarsedesc)
+
 # assign part number to put nonpartisan last
-frac_by_coarsedesc_by_party2$partynumber<-ifelse(frac_by_coarsedesc_by_party2$party=="DEMOCRAT",1,
-		ifelse(frac_by_coarsedesc_by_party2$party=="REPUBLICAN",2,3
-		))
+frac_by_coarsedesc_by_party2$partynumber<-
+  ifelse(frac_by_coarsedesc_by_party2$party=="DEMOCRAT",1,
+         ifelse(frac_by_coarsedesc_by_party2$party=="REPUBLICAN",2,3))
 #Now, sort the df by maxfracofpartytotal desc, then by partynumber
-frac_by_coarsedesc_by_party2 <- frac_by_coarsedesc_by_party2[order(-frac_by_coarsedesc_by_party2$maxfracofpartytotal,
-frac_by_coarsedesc_by_party2$partynumber),]
+frac_by_coarsedesc_by_party2 <- 
+  frac_by_coarsedesc_by_party2[order(
+    -frac_by_coarsedesc_by_party2$maxfracofpartytotal,
+    frac_by_coarsedesc_by_party2$partynumber),]
+
 # get the same coarsedescriptions used in previous graph
-topnparty<-frac_by_coarsedesc_by_party2[frac_by_coarsedesc_by_party2$coarsedescription %in% topn$coarsedescription,]
+topnparty<-frac_by_coarsedesc_by_party2[
+  frac_by_coarsedesc_by_party2$coarsedescription %in% topn$coarsedescription,]
 # carecols
 caredata=topnparty[c("coarsedescription","party","fractionofpartytotal")]
 caredata$coarsedescription <- factor(caredata$coarsedescription)
@@ -605,19 +609,17 @@ caredata$party <- factor(caredata$party)
 jxtab_sum <- xtabs(fractionofpartytotal ~ party + coarsedescription, data=caredata)
 jxtab_sum <- jxtab_sum[,order(colSums(jxtab_sum), decreasing = TRUE)]
 jxtab_sum_mat <- data.matrix(jxtab_sum)
-```
-```{r fig.align="center", fig.cap="Fraction of party expenditure by coarse description, by party"}
 
-mycolors=c("gray25","gray45","gray75")
-par(mar=c(12,6,4,2)+0.1)
+par(mar=c(14,6,4,2)+0.1)
 barplot(jxtab_sum_mat,
         beside = TRUE,
+        legend.text = rownames(jxtab_sum_mat),
         main = "Fractional Expenditures by Coarse Description, by Party",
         xlab = "",
-        ylab = "", cex.names=0.6, las=2, col=mycolors)
-legend("topright", rownames(jxtab_sum_mat), cex=0.75, pch=0, pt.cex = 0, fill=mycolors)
+        ylab = "", cex.names=0.75, las=2)
 mtext("Fraction of Total Party Expenditure ($)",side=2,line=3)
-mtext("Coarse Description",side=1,line=10)
+mtext("         Coarse Description",side=1,line=10)
+
 ```
 
 
@@ -647,8 +649,8 @@ barplot(xtab_sum_mat,
         beside = TRUE,
         legend.text = rownames(xtab_sum_mat),
         main = "Total party spending across jurisdiction types",
-        xlab = "party",
-        ylab = "total amount spent")
+        xlab = "Political Party",
+        ylab = "Total amount spent ($)")
 ```
 
 Now we can see that although the Democratic party spends more money than the other parties overall, they spend nearly all of it on legislative and statewide elections. The Republican party, on the other hand, focuses their resources on legislative and local elections and spends almost nothing on statewide elections. This may suggest that Washington state, as a whole, is sufficiently Democratic that the Republican party does not attempt to compete for statewide offices, and instead focuses its resources on competing for geographically localized offices in more conservative districts. We also see that Non-Partisan spending is concentrated entirely on Judicial and Local offices, this implies that Judicial offices and many local offices have a non-partisan requirement.
