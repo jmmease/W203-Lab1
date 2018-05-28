@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction
 
-As members of the campaign committee for the upcoming Washington state election, we are interested in the nature of the debt that candidates for office have taken on in past elections. This report contains the findings of our initial exploratory data analysis of a dataset from the 2012 election.
+As members of the campaign committee for the upcoming Washington state election, we are interested in the nature of the debt that candidates for office have taken on in past elections. This report contains the findings of our initial exploratory data analysis of a data set from the 2012 election.
 
 **Research question**: How can the amount of debt taken on by candidates in the 2012 Washington state election be understood in relation to all of the other available variables in this data set?
 
@@ -29,12 +29,12 @@ print(sprintf("Number of columns: %d, Number of rows: %d", ncol(DebtRaw), nrow(D
 ```
 
 ### Align column labels
-Next, we examine the first 4 rows of the dataset across all columns
+Next, we examine the first 4 rows of the data set across all columns
 ```{r}
 str(DebtRaw[1:4,])
 ```
 
-Based on the column names, factor levels, and the first few values it appears that the column labels of this data set are well aligned over the first 9 columns (`reportnumber` through `office`). There seems to be an alignment error, however, beginning with the `legislativedistrict` column. The first factor level of this column, `"ATTORNEY GENERAL"`, is not sensible as a legislative district. Instead we expect legislative districts to be identified by integers, as is the case for the column immediatly after `legislativedistrict`.
+Based on the column names, factor levels, and the first few values it appears that the column labels of this data set are well aligned over the first 9 columns (`reportnumber` through `office`). There seems to be an alignment error, however, beginning with the `legislativedistrict` column. The first factor level of this column, `"ATTORNEY GENERAL"`, is not sensible as a legislative district. Instead we expect legislative districts to be identified by integers, as is the case for the column immediately after `legislativedistrict`.
 
 After careful examination, it is clear that the column labels from `legislativedistrict` through `vendorstate` should all be shifted forward by one position. In this shift we remove the trailing `vendorzip` column label, which is appropriate since we do not have any data columns consistent with zip codes.  We must also introduce a new label for the data column previously labeled by `jurisdiction`. We will choose the name `DUMMY` for the time being, and will introduce a more meaningful name once we have identified the column's role.
 
@@ -51,7 +51,7 @@ str(DebtShifted[1:4,])
 ```
 
 ### Describe variables
-Next, a brief overview of each of these 28 variables. The initial description in *italics* is the description provided in the `CandidateDebt.pdf` documentation provided alongside the dataset.
+Next, a brief overview of each of these 28 variables. The initial description in *italics* is the description provided in the `CandidateDebt.pdf` documentation provided alongside the data set.
 
  - `reportnumber`: *identifier used for tracking the individual form* \
  An integer with values like 100495995, 100496548, etc. Contains no duplicate or missing values.
@@ -81,13 +81,13 @@ Next, a brief overview of each of these 28 variables. The initial description in
  A string with 16 unique values (`"GOVERNOR"`, `"STATE SENATOR"`, `"COUNTY SHERIFF"`, etc.) and no missing values.
  
  - `DUMMY`: \
- This is the placeholder column label that was introduced above in order to align the subsequent column labels with their data columns. There are 14 unique `DUMMY` values present in the dataset, and these 14 values are a proper subset of the 16 unique values present in the `office` variable described above.
+ This is the placeholder column label that was introduced above in order to align the subsequent column labels with their data columns. There are 14 unique `DUMMY` values present in the data set, and these 14 values are a proper subset of the 16 unique values present in the `office` variable described above.
  
  - `legislativedistrict`: *The Washington State legislative district* \
- An integer identifiying the legislative district ranging from 1 to 48 with 354 missing values.
+ An integer identifying the legislative district ranging from 1 to 48 with 354 missing values.
  
  - `position`: *The position associated with an office* \
- An integer identifying the office's position raning from 1 to 40 with 574 missing values.
+ An integer identifying the office's position ranging from 1 to 40 with 574 missing values.
  
  - `party`: *The political party as declared by the candidate on their registration* \
  A string with 4 unique values (`"DEMOCRAT"`,  `"REPUBLICAN"`, `"INDEPENDENT"`, and `"NON PARTISAN"`) and 56 missing values.
@@ -145,13 +145,13 @@ t(DebtShifted[1,c('filerid', 'filername', 'office', 'DUMMY', 'legislativedistric
                   'party', 'jurisdiction', 'jurisdictiontype')])
 ```
 
-Notice that the `office` column indicates that a candidate named Cindy Ryu ran for `"STATE REPRESENTATIVE"`. The `party`, `jurisdiction`, and `legislativedistrict` columns indicate that she ran for state senate as a Republican in district 1.  However, a quick wikipedia search shows that Cindy Ryu atually ran for state representative in 2012 as a Democrat in district 32.
+Notice that the `office` column indicates that a candidate named Cindy Ryu ran for `"STATE REPRESENTATIVE"`. The `party`, `jurisdiction`, and `legislativedistrict` columns indicate that she ran for state senate as a Republican in district 1.  However, a quick Wikipedia search shows that Cindy Ryu actually ran for state representative in 2012 as a Democrat in district 32.
 
 After careful examination of many individual rows, we have concluded that the values for each row are self consistent from `reportnumber` through `office` (e.g. Candidate with `filername` of `"RYU CINDY S"` did run for the `office` of `"STATE REPRESENTATIVE"`), but they are inconsistent from `DUMMY` through `vendorstate` (Cindy Ryu did not have `party` of `"REPUBLICAN"` and did not run for an office with a `jurisdiction` of `"LEG DISTRICT 01 - SENATE"`).
 
-The columns from `DUMMY` through `vendorstate` also exhibit peculiar repition and missing value behavior. All of these colums have 56 missing values, and they occur in the same 56 rows. In contrast, there are no missing values in any of the columns before ``DUMMY`. Also, there are many rows that have distinct values from `reportnumber` through `office` but identical values from `DUMMY` through `vendorstate`.
+The columns from `DUMMY` through `vendorstate` also exhibit peculiar repetition and missing value behavior. All of these columns have 56 missing values, and they occur in the same 56 rows. In contrast, there are no missing values in any of the columns before ``DUMMY`. Also, there are many rows that have distinct values from `reportnumber` through `office` but identical values from `DUMMY` through `vendorstate`.
 
-Based on these missing value and repitition observations, and the need to introduce the `DUMMY` column in the first place, we speculate that this data set is actually the combination of two separate data sets that are improperly aligned, perhaps as the result of an errant SQL join.  We further conclude that there is not sufficient information available to realign these two data sets.
+Based on these missing value and repetition observations, and the need to introduce the `DUMMY` column in the first place, we speculate that this data set is actually the combination of two separate data sets that are improperly aligned, perhaps as the result of an errant SQL join.  We further conclude that there is not sufficient information available to realign these two data sets.
 
 To move forward, we will define two new data sets
 
@@ -162,7 +162,8 @@ To move forward, we will define two new data sets
 DebtLeft = DebtShifted[, seq(9)]
 
 # Print out number of rows and columns
-print(sprintf("The DebtLeft data set has %d columns and %d rows.", ncol(DebtLeft), nrow(DebtLeft)))
+print(sprintf("The DebtLeft data set has %d columns and %d rows.",
+              ncol(DebtLeft), nrow(DebtLeft)))
 ```
 
 
@@ -189,7 +190,7 @@ While we will explore both `Debt` and `DebtLeft` in the analysis to follow, the 
 
 ## Univariate Analysis of Key Variables
 
-In the introduction, we mentioned how the dataset we received actually consists of 2 misaligned tables. We subsequently split up the two tables into `DebtLeft` and `Debt` where the latter holds the `amount` column which is the target variable of our research question. Although the `DebtLeft` table is not aligned with the `amount` variable, it can still give us some insight about the nature of our dataset.
+In the introduction, we mentioned how the data set we received actually consists of 2 misaligned tables. We subsequently split up the two tables into `DebtLeft` and `Debt` where the latter holds the `amount` column which is the target variable of our research question. Although the `DebtLeft` table is not aligned with the `amount` variable, it can still give us some insight about the nature of our data set.
 
 ### Who are the candidates and how many reports did they file?
 
@@ -204,7 +205,7 @@ length(unique(DebtLeft$filername))
 
 There are 1043 rows to the `DebtLeft` table and as shown above, there are a total of 1043 unique report numbers, one for each row. Every report number is associated with a candidate, but we have found that there are only 134 unique candidates in the table. This suggests that each row of the data set represents a B.3 report filed by a candidate and some of the candidates filed multiple reports.
 
-To visualize this, we can aggregate the data into a dataframe showing the number of reports filed by each candidate. The summary of this aggregated dataframe (shown below) tells us that the minimum number of reports filed by a candidate is 1, while the maximum filed is 38. The median of the sample is 6 while the mean is 7.784 which suggests there is a skew towards the right of the distribution. 
+To visualize this, we can aggregate the data into a data frame showing the number of reports filed by each candidate. The summary of this aggregated data frame (shown below) tells us that the minimum number of reports filed by a candidate is 1, while the maximum filed is 38. The median of the sample is 6 while the mean is 7.784 which suggests there is a skew towards the right of the distribution. 
 
 ```{r}
 # Find the number of reports filed by each candidate
@@ -214,7 +215,7 @@ colnames(RepPerCan)[2] <- "NumOfReports"
 summary(RepPerCan$NumOfReports)
 ```
 
-Before looking at the histogram, we decided to take a look at the 5 candidates that filed the most reports as shown below. Unfortunately, our dataset does not allow us to determine which candidates incurred the most debt. Because of the misalignemnt with the two halves of our dataset, we can only get a sense of which candidates filed the most debt reports. Furthermore, it is very possible that our dataset is missing a lot of debt reports so these results are only reflective of the sample we received.
+Before looking at the histogram, we decided to take a look at the 5 candidates that filed the most reports as shown below. Unfortunately, our data set does not allow us to determine which candidates incurred the most debt. Because of the misalignment with the two halves of our data set, we can only get a sense of which candidates filed the most debt reports. Furthermore, it is very possible that our data set is missing a lot of debt reports so these results are only reflective of the sample we received.
 
 ```{r}
 # Show top 5 candidates that filed the most reports
@@ -228,20 +229,21 @@ Because of the strong skew towards the right of the data set, we are expecting t
 length(which(RepPerCan$NumOfReports == 1))
 ```
 
-The figure below is a histogram showing the number of reports filed by each candidate and it confirmed that there is indeed a skew towards the right of the distribution. We can conclude that most candidates filed between 1 and 5 reports and very few filed over 20 reports. This gives us a bit of an insight about the amount of debt incurred by the candidates. For the candidates in our sample, we now understand that the majority of them will not be filing many reports but there are a few that will file up to 38 reports.
+The figure below is a histogram showing the number of reports filed by each candidate and it confirms that there is indeed a skew towards the right of the distribution. We can conclude that most candidates filed between 1 and 5 reports, very few filed over 20 reports, and 1 filed 38 reports.
 
 ```{r}
 # Show histogram showing distribution of the number of reports filed by each candidate.
-hist(RepPerCan$NumOfReports, main = "Histogram of the Number of Reports Filed by Each Candidate",
+hist(RepPerCan$NumOfReports,
+     main = "Histogram of the Number of Reports Filed by Each Candidate",
      xlab = "Number of Reports Filed by a Candidate")
 axis(1, at = seq(0,40, by = 5))
 ```
 
 ### Which offices are being pursued by the candidates?
 
-The next piece of information we can get from the `DebtLeft` dataset is how many candidates in our sample are running for each office. This can give us insight about the `Debt` table which consists of the debt `amount` variable because the office of the candidates is the only variable shared between the two datasets, even if they don't align. 
+The next piece of information we can get from the `DebtLeft` data set is how many candidates in our sample are running for each office. This can give us insight about the `Debt` table which consists of the debt `amount` variable because the office of the candidates is the only variable shared between the two data sets, even if they don't align. 
 
-To get a sense of how many candidates are applying for each office, we first have to get rid of the duplicate candidates. To do this, we can simply remove the `reportnumber` column and keep only the unique rows after that.
+To get a sense of how many candidates were running for each office, we first have to get rid of the duplicate candidates. To do this, we can simply remove the `reportnumber` column and keep only the unique rows after that.
 
 ```{R}
 # Remove reportnumber and keep unique rows
@@ -250,14 +252,14 @@ Office <- unique(DebtLeft[-1])
 length(Office$filerid)
 ```
 
-After creating the new dataframe with only the unique candidate rows, something strange occured where we ended up 141 rows instead of the expected 134. By doing a summary of `filername` variable, we can see that there are 7 candidates that have more than 1 row. Upon inspection, these 7 candidates each have 2 different `filerids` and had two different offices associated with them. An example is shown below. According to the two rows shown below, it looks like David S Frockt was running for State Representative but then switched to State Senator based on the numbering of the `filerid`. With some quick research, we found that David Frockt was a State Representative in 2010 but was elected as State Senator in the middle of 2011 after the death of Senator Scott White. This is very much a special situation, and it appears to have happened 7 times in our data set. We learned that candidates can apply for a different position within the time period of our sample.
+After creating the new data frame with only the unique candidate rows, something strange occurred where we ended up 141 rows instead of the expected 134. By doing a summary of `filername` variable, we can see that there are 7 candidates that have more than 1 row. Upon inspection, these 7 candidates each have 2 different `filerids` and had two different offices associated with them. An example is shown below. According to the two rows shown below, it looks like David S Frockt was running for State Representative but then switched to State Senator based on the numbering of the `filerid`. With some quick research, we found that David Frockt was a State Representative in 2010 but was elected as State Senator in the middle of 2011 after the death of Senator Scott White. This is very much a special situation, and it appears to have happened 7 times in our data set. We learned that candidates can apply for a different position within the time period of our sample.
 
 ```{R}
 # Show exmaple of duplicate candidate.
 Office[Office$filername == "FROCKT DAVID S",]
 ```
 
-Though we found these 7 instances where a candidate ran for two different positions within our sample, we did not feel the need to screen out these 7 candidates because we are only looking for the approxiate number of applicants for each position instead of exact values. We are only using the `DebtLeft` table to gain some insight on the `Debt` table so an approximate representation is all we want. Furthermore, there is no indication that screening out those candidates altogether, or only keeping one of their rows would result in a more accurate representation.
+Though we found these 7 instances where a candidate ran for two different positions within our sample, we did not feel the need to screen out these 7 candidates because we are only looking for the approximate number of applicants for each position instead of exact values. We are only using the `DebtLeft` table to gain some insight on the `Debt` table so an approximate representation is all we want. Furthermore, there is no indication that screening out those candidates altogether, or only keeping one of their rows would result in a more accurate representation.
 
 ```{R}
 # Create Dataframe showing the number of candidates running for each office
@@ -267,17 +269,20 @@ OfficePopularity <- OfficePopularity[order(OfficePopularity[,2], decreasing = TR
 
 # Show barplot of results
 op <- par(mar = c(10,4,4,2) + 0.1)
-barplot(OfficePopularity$N, main = "Number of Candidates Running for Each Office", ylab = "# of Cadidates",
+barplot(OfficePopularity$N,
+        main = "Number of Candidates Running for Each Office",
+        ylab = "# of Cadidates",
       names.arg=OfficePopularity$office, las = 2, cex.names=0.6)
 par(op)
 ```
-The bar chart aboves shows that most of the candidates in our sampel are running for the State Representative position. This might be because there at 10 chairs open in the state of Washington compared to the 2 chairs open for the position of state senator. There is only 1 chair open for state auditor, but even so, it does not seem to be a highly contended position based on our sample.
+The bar chart above shows that most of the candidates in our sample are running for the State Representative position. This might be because there at 10 chairs open in the state of Washington compared to the 2 chairs open for the position of state senator. There is only 1 chair open for state auditor, but even so, it does not seem to be a highly contended position based on our sample.
 
 ### Which party has the most candidates running for office?
-Now we will start looking at the data in the `Debt` table (the one with vendor information and debt amount). We have no way of knowing which debt report was filed by which candidate and we know from our `DebtLeft` analysis above, that one candidate can file multiple reports. However, assuming that each candidate will have a unique combination of office, legislative dictrict, position, party, and jurisdiction, we can find the rows that are unique for all of these categories and assume each row is a candidate. Now we can plot a bar chart to get a sense of how many cadidates for each party are filing these debt reports.
+Now we will start looking at the data in the `Debt` table (the one with vendor information and debt amount). We have no way of knowing which debt report was filed by which candidate and we know from our `DebtLeft` analysis above, that one candidate can file multiple reports. However, assuming that each candidate will have a unique combination of office, legislative district, position, party, and jurisdiction, we can find the rows that are unique for all of these categories and assume each row is a candidate. Now we can plot a bar chart to get a sense of how many candidates for each party are filing these debt reports.
 
 ```{R}
-# Only keep Office2, legislativedictrict, position, party, jurisdiction and find unique rows
+# Only keep Office2, legislativedictrict, position, party,
+# jurisdiction and find unique rows
 DebtUnique <- unique(Debt[1:5])
 # Aggregate a new dataframe to store the number of rows for each party
 PartyCount <- aggregate(jurisdiction ~ party, DebtUnique, length)
@@ -285,45 +290,54 @@ colnames(PartyCount)[2] <- "N"
 PartyCount <- PartyCount[order(PartyCount[,2], decreasing = TRUE),]
 # Plot a bar chart showing the number of rows for each party
 op <- par(mar = c(5,4,4,2) + 0.1)
-barplot(PartyCount$N, main = "Number of Candidates from each Party", ylab = "# of Cadidates",
-      names.arg=PartyCount$party, las = 2, cex.names=0.6)
+barplot(PartyCount$N,
+        main = "Number of Candidates from each Party",
+        ylab = "# of Cadidates",
+        names.arg=PartyCount$party, las = 2, cex.names=0.6)
 par(op)
 ```
-Above, we are assuming that we have successfully filtered the dataset to one row per candidate but it is possible that two democrats are running for the exact same office in the exact same district, jurisdiction, and position, in which case they would be grouped as a single data point. However, regardless of the previous point, we think it is safe to claim that in our sample, the majority of our candidates are from the Democratic party, which makes sense since Washington is a blue state. However, since the number of republican and non-partisan candidates are very similar, we cannot claim which one has more candidates because of the uncertainty of our row manipulation.
+Above, we are assuming that we have successfully filtered the data set to one row per candidate but it is possible that two democrats are running for the exact same office in the exact same district, jurisdiction, and position, in which case they would be grouped as a single data point. However, regardless of the previous point, we think it is safe to claim that in our sample, the majority of our candidates are from the Democratic party, which makes sense since Washington is a blue state. However, since the number of republican and non-partisan candidates are very similar, we cannot claim which one has more candidates because of the uncertainty of our row manipulation.
 
-### Barplot of the debtdate by year-month
+### When did candidates incur debt?
 
-The next item we will analyze is the `debtdate` variable which is defined as the date that the debt was incurred. However, looking at the count of each date may be too discrete. Instead we can group them by month and year for easier visualization. 
+The next item we will analyze is the `debtdate` variable which is defined as the date that the debt was incurred. However, looking at the count for each date would be too sparse. Instead we can group them by month and year for easier visualization. 
+
+```{r,warning=FALSE,message=FALSE}
+# Import lubridate to round the dates to the month
+library(lubridate)
+```
 
 ```{R}
 # Copy Debt into a temporary df, but convert the debtdate variable into date object
 DebtTemp <- Debt
 DebtTemp$debtdate <- as.Date(DebtTemp$debtdate, format='%m/%d/%y')
-# Import lubridate to round the dates to the month
-library(lubridate)
 DebtTemp$debtdate <- floor_date(DebtTemp$debtdate, unit = "month")
 # Aggregate the data to show the amount of line items are in each month
 DateCount <- aggregate(amount ~ debtdate, DebtTemp, length)
 colnames(DateCount)[2] <- "N"
 op <- par(mar = c(5,4,4,2) + 0.1)
-barplot(DateCount$N, main = "Number of Line Items in each Year-Month Bucket", ylab = "Frequency",
-      names.arg=DateCount$debtdate, las = 2, cex.names=0.6)
+
+barplot(DateCount$N,
+        main = "Number of Line Items in each Year-Month Bucket",
+        ylab = "Frequency",
+        names.arg=DateCount$debtdate, las = 2, cex.names=0.6)
 par(op)
 ```
 
-From the barplot shown above, we can observe that in our sample, the number of line items are increased as we apprach the election date. This might suggest increased spending but we are not yet able to make that claim until we look at the debt amount over time in the bivariate analysis section.
+From the bar plot shown above, we can observe that in our sample, the number of line items are increased as we approach the election date. This might suggest increased spending but we are not yet able to make that claim until we look at the debt amount over time in the bivariate analysis section.
 
-### Histogram of the debt amount
+### How much debt did candidates disclose per report?
 
 Finally we have reached the univariate analysis of our debt `amount` variable.
 
 ```{R}
 summary(Debt$amount)
 ```
-Before we plot the histogram, we took a look at the summary of this sampel. As noted above, the minimum debt reported was \$3.24 while the maximum debt reported was \$19,000. The median debt amount was \$400 while the mean was much higher at \$1387.59. This suggests a very strong skew to the right of the distribution and it is likely that the \$19,000 amount is an outlier.
+Before we plot the histogram, we look at the summary of this sample. As noted above, the minimum debt reported was \$3.24 while the maximum debt reported was \$19,000. The median debt amount was \$400 while the mean was much higher at \$1387.59. This suggests a very strong skew to the right of the distribution and it is likely that the \$19,000 amount is an outlier.
 
 ```{R}
-hist(Debt$amount, breaks = seq(0, 20000, by = 100) , main = "Histogram of the Amount of Dollars per Line Item",
+hist(Debt$amount, breaks = seq(0, 20000, by = 100),
+     main = "Histogram of the Amount of Dollars per Line Item",
      xlab = "Debt Amount per Line Item ($)", las = 2)
 axis(1, at = seq(0, 20000, by = 1000), las = 2)
 ```
@@ -332,13 +346,15 @@ The first thing to do is to take a look at the histogram without filtering out a
 
 ```{R}
 boxplot(Debt$amount, horizontal = TRUE, outline = FALSE, axes = FALSE, staplewex = 1)
-text(x = boxplot.stats(Debt$amount)$stats, labels = boxplot.stats(Debt$amount)$stats, y=1.25, cex = 0.6)
+text(x = boxplot.stats(Debt$amount)$stats,
+     labels = boxplot.stats(Debt$amount)$stats, y=1.25, cex = 0.6)
 ```
-Generating a boxplot without the outliers as shown above lets us know that the bulk of the data is between 0 and 2500 dollars. Therefore, we can replot the histogram with these new bounds.
+Generating a box plot without the outliers as shown above lets us know that the bulk of the data is between 0 and 2500 dollars. Therefore, we can replot the histogram with these new bounds.
 
 ```{R}
 filteredAmount <- Debt[(Debt$amount < 2500),]
-hist(filteredAmount$amount, breaks = seq(0, 2500, by = 100) , main = "Histogram of the Amount of Dollars per Line Item",
+hist(filteredAmount$amount, breaks = seq(0, 2500, by = 100),
+     main = "Histogram of the Amount of Dollars per Line Item",
      xlab = "Debt Amount per Line Item ($)", las = 2)
 axis(1, at = seq(0, 2500, by = 100), las = 2)
 ```
