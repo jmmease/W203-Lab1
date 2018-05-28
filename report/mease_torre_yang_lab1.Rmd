@@ -387,14 +387,14 @@ class(amountbyparty$totalamountbyparty) <- c("money",class(amountbyparty$totalam
 amountbyparty <- amountbyparty[order(amountbyparty$totalamountbyparty, decreasing=TRUE),]
 
 # bar plot tutorial https://www.statmethods.net/graphs/bar.html
+op <- par(mar = c(5,4,4,2) + 0.1)
 barplot(amountbyparty$totalamountbyparty, main="Total Expenditures by Political Party", 
-  	xlab="Political Party",
-  	names.arg=amountbyparty$party,
-  	cex.names=1)
-
+  	xlab="Political Party", las=1,
+  	names.arg=amountbyparty$party)
+par(op)
 ```
 
-The univariate analysis of number of candidates by party revealed that the number of candidates per party was heavily skewed toward Democrats, so it is reasonable that more total money was spent by Democrat candidates than by those of other parties.  The amount of money spent per candidate by party can be computed by dividing the amount of money spent by party by the number of candidates of each party.  This is shown in Figure 9.
+The univariate analysis of number of candidates by party revealed that the number of candidates per party was heavily skewed toward Democrats, so it is reasonable that more total money was spent by Democrat candidates than by those of other parties.  It is worthwhile to compute the amount of money spent per candidate of a given party by dividing the amount of money spent by party by the number of candidates of each party computed earlier.  This is shown in Figure 9.
 
 ```{r}
 # Merge PartyCount into amountbyparty
@@ -407,10 +407,10 @@ amountbyparty <- amountbyparty[order(amountbyparty$amountpercandidate, decreasin
 
 # bar plot tutorial https://www.statmethods.net/graphs/bar.html
 barplot(amountbyparty$amountpercandidate, main="Expenditure per Candidate by Political Party", 
-  	xlab="Political Party",
+  	xlab="Political Party", ylab="Expenditure ($)",
   	names.arg=amountbyparty$party,
-  	cex.names=1)
-
+  	cex.names=0.8)
+#axis(2, at=axTicks(2), labels=sprintf("$%s", axTicks(2)))
 
 ```
 Interestingly, the amounts of money spent per candidate by party have the same relative order as the total amounts spent by party, though the differences in magnitude are greatly reduced.
@@ -452,11 +452,16 @@ amountbycoarsedesc <- amountbycoarsedesc[order(amountbycoarsedesc$amount, decrea
 nbars=13
 topn=amountbycoarsedesc[1:nbars,]
 # bar plot tutorial https://www.statmethods.net/graphs/bar.html
+op <- par(mar = c(10,4,4,2) + 0.1)
 barplot(topn$amount, main="Total Expenditures by Coarse Description",
         sub=paste(c("(Top", nbars, "shown)"), collapse = " "),
   	xlab="Coarse Description",
   	names.arg=topn$coarsedescription,
   	cex.names=0.65, las=2)
+par(op)
+
+
+
 
 # Maybe I should make a function for bar charts, since I will be making many of them.
 
@@ -527,6 +532,29 @@ topnparty<-frac_by_coarsedesc_by_party2[frac_by_coarsedesc_by_party2$coarsedescr
 barplot(topnparty$fractionofpartytotal, main="Fractional Expenditures by Coarse Description, by Party",
         xlab="Coarse Description", col=c("blue","red","green"),
         legend = c("Democrat","Republican","Non Partisan"), beside=TRUE, names.arg=topnparty$coarsedescription, las=2)
+
+
+
+# carecols
+caredata=topnparty[c("coarsedescription","party","fractionofpartytotal")]
+caredata$coarsedescription <- factor(caredata$coarsedescription)
+caredata$party <- factor(caredata$party)
+# Remove INDEPENDENT
+
+# Order by total spending
+jxtab_sum <- xtabs(fractionofpartytotal ~ party + coarsedescription, data=caredata)
+jxtab_sum <- jxtab_sum[,order(colSums(jxtab_sum), decreasing = TRUE)]
+
+
+jxtab_sum_mat <- data.matrix(jxtab_sum)
+barplot(jxtab_sum_mat,
+        beside = TRUE,
+        legend.text = rownames(jxtab_sum_mat),
+        main = "Fractional Expenditures by Coarse Description, by Party",
+        xlab = "Coarse Description",
+        ylab = "total amount spent", las=2)
+
+
 
 
 ```
