@@ -189,7 +189,7 @@ While we will explore both `Debt` and `DebtLeft` in the analysis to follow, the 
 
 ## Univariate Analysis of Key Variables
 
-In the introduction, we mentioned how the dataset we received actually consists of 2 misaligned tables. We subsequently split up the two tables into `DebtLeft` and `Debt` where the latter holds the `amount` column which is the dependant variable of our research question. Although the `DebtLeft` table is not aligned with the `amount` variable, it can still give us some insight about the nature of our dataset.
+In the introduction, we mentioned how the dataset we received actually consists of 2 misaligned tables. We subsequently split up the two tables into `DebtLeft` and `Debt` where the latter holds the `amount` column which is the target variable of our research question. Although the `DebtLeft` table is not aligned with the `amount` variable, it can still give us some insight about the nature of our dataset.
 
 ### Who are the candidates and how many reports did they file?
 
