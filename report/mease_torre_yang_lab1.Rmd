@@ -671,16 +671,8 @@ barplot(xtab_sum_mat,
         ylab = "total amount spent")
 ```
 
-Now we can see that although the Democratic party spends more money than the other parties overall, they spend nearly all of it on legislative and statewide elections. The Republican party, on the other hand, focuses their resources on legislative and local elections and spends almost nothing on statewide elections. This may suggest that Washington state, as a whole, is sufficiently Democratic that the Republican party does not attempt to compete for statewide offices, and instead focuses its resources on competing for geographically localized offices in more conservative districts.
-
+Now we can see that although the Democratic party spends more money than the other parties overall, they spend nearly all of it on legislative and statewide elections. The Republican party, on the other hand, focuses their resources on legislative and local elections and spends almost nothing on statewide elections. This may suggest that Washington state, as a whole, is sufficiently Democratic that the Republican party does not attempt to compete for statewide offices, and instead focuses its resources on competing for geographically localized offices in more conservative districts. We also see that Non-Partisan spending is concentrated entirely on Judicial and Local offices, this implies that Judicial offices and many local offices have a non-partisan requirement.
 
 ## Conclusion
 
-Debt amount is highly skewed in the positive direction.
-
-Statewide amounts have the largest skew of the jurisdiction types
-
-Total expendatures for democrats far exceed those for all other parties combined
-
-
-Conclusion...
+Even though our original data set was deeply flawed, we have learned a great deal about this sample through our exploratory data analysis. We have learned that most candidates filed 5 or fewer reports, but that the distribution of number reports is strongly skewed in the position direction. We have learned that more candidates ran for state representative that for any other office We have learned that debt amounts are most frequently between \$200 and \$300 but there is an extreme skew in the positive direction. We have learned that spending increased, both in line item count and total dollar amount, in the months leading up to the 2012 election. We have learned that expenditure per candidate was highest for statewide offices. We have learned that Democrats and Non-partisan candidates spent a greater fraction of money on consulting than the Republicans, while Republicans spent a greater fraction on credit card payments and telecom expenses. Finally, we have learned that the total spending by the Democratic party far surpassed that of all other parties (both in total and average per candidate), but that this spending was almost entirely dedicated to legislative and statewide offices. The Republican party on the other hand focused its spending on legislative and local offices, and actually outspent the Democratic party on local offices.
