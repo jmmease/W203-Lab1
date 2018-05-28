@@ -1,5 +1,5 @@
 ---
-title: 'W203 Lab 1: Candidate Dept EDA'
+title: 'W203 Lab 1: Candidate Debt EDA'
 author:
 - Jon Mease
 - James De La Torre
@@ -15,21 +15,16 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction
 
-As members of the campaign committee for the upcoming Washington state election, we are interested in the nature of debt that candidates for office have taken on in past elections. This report contains the findings of our initial exploratory data analysis of a dataset from the 2012 election.
+As members of the campaign committee for the upcoming Washington state election, we are interested in the nature of the debt that candidates for office have taken on in past elections. This report contains the findings of our initial exploratory data analysis of a dataset from the 2012 election.
 
-**Research question**: How can the amount of debt taken on by candidates in the 2012 Washington state election be understood in relation to all of the other available fields in this data set?
+**Research question**: How can the amount of debt taken on by candidates in the 2012 Washington state election be understood in relation to all of the other available variables in this data set?
 
 ### Load data set
 The data set we are investigating is named `CandidateDebt.csv` and it is located in the `datasets` directory distributed alongside this report.
 
-First, we use R to load the data set in the ``DebtRaw`` variable, treating the string `'#N/A'` as a missing value.
+First, we use R to load the data set as the ``DebtRaw`` variable, treating the string `'#N/A'` as a missing value.
 ```{r}
 DebtRaw = read.csv("../dataset/CandidateDebt.csv", na.strings='#N/A')
-```
-
-This initial dataset has 28 columns and 1043 rows.
-
-```{r}
 print(sprintf("Number of columns: %d, Number of rows: %d", ncol(DebtRaw), nrow(DebtRaw)))
 ```
 
@@ -39,9 +34,9 @@ Next, we examine the first 4 rows of the dataset across all columns
 str(DebtRaw[1:4,])
 ```
 
-Based on the column names, factor levels, and values it appears that the columns of this data set are well aligned over the first 9 columns (`reportnumber` through `office`). There seems to be an alignment error, However, beginning with the `legislativedistrict` column. The first factor level of this column, `"ATTORNEY GENERAL"`, is not sensible as a legislative district. Instead we expect legislative districts to be identified by integers, as is the case for the column immediatly after `legislativedistrict`.
+Based on the column names, factor levels, and the first few values it appears that the column labels of this data set are well aligned over the first 9 columns (`reportnumber` through `office`). There seems to be an alignment error, however, beginning with the `legislativedistrict` column. The first factor level of this column, `"ATTORNEY GENERAL"`, is not sensible as a legislative district. Instead we expect legislative districts to be identified by integers, as is the case for the column immediatly after `legislativedistrict`.
 
-After careful examination, it is clear that the column labels from `legislativedistrict` all the way through `vendorstate` should all be shifted forward by one position. In this shift we remove the trailing `vendorzip` label, which is appropriate since we do not have any data columns consistent with zip codes.  We must also introduce a new label for the data column previously labeled by `jurisdiction`. We will choose the name `DUMMY` for the time being, and will introduce a more meaningful name once we have identified the column's contents.
+After careful examination, it is clear that the column labels from `legislativedistrict` through `vendorstate` should all be shifted forward by one position. In this shift we remove the trailing `vendorzip` column label, which is appropriate since we do not have any data columns consistent with zip codes.  We must also introduce a new label for the data column previously labeled by `jurisdiction`. We will choose the name `DUMMY` for the time being, and will introduce a more meaningful name once we have identified the column's role.
 
 ```{r}
 DebtShifted = DebtRaw
@@ -50,108 +45,97 @@ colnames(DebtShifted) <- c(colnames(DebtRaw)[1:9],
                            colnames(DebtRaw)[10:(ncol(DebtRaw)-1)])
 ```
 
-We once again examine the first 4 rows of the data set, and note that the column labels are now well aligned with the data columns. We discuss the columns in more detail in the following section.
+We once again examine the first 4 rows of the data set, and note that the column labels are now well aligned with the data columns. We discuss the columns in detail in the following section.
 ```{r}
 str(DebtShifted[1:4,])
 ```
 
-### Convert dates
-The variables `fromdate`, `thrudate`, and `debtdate` are factors that represent dates using a mm/dd/yy format. Here we convert these into `Date` instances.
-```{r}
-#DebtShifted$fromdate <- as.Date(DebtShifted$fromdate, format='%m/%d/%y')
-#DebtShifted$thrudate <- as.Date(DebtShifted$thrudate, format='%m/%d/%y')
-#DebtShifted$debtdate <- as.Date(DebtShifted$debtdate, format='%m/%d/%y')
-```
-
 ### Describe variables
-Next, a brief overview of these 28 variables. The initial description in *italics* is the description provided in the `CandidateDebt.pdf` documentation provided alongside the dataset.
+Next, a brief overview of each of these 28 variables. The initial description in *italics* is the description provided in the `CandidateDebt.pdf` documentation provided alongside the dataset.
 
  - `reportnumber`: *identifier used for tracking the individual form* \
- This contains integers with values like 100495995, 100496548, etc. It contains no duplicate or missing values.
+ An integer with values like 100495995, 100496548, etc. Contains no duplicate or missing values.
 
  - `origin`: *This field shows from which filed report-type the data originates.* \
- Factor with a single level, `B.3`, that contains no missing values.
+ A string with a single constant value, `"B.3"`, and no missing values.
 
  - `filerid`: *The unique id assigned to a candidate* \
- Unique candidate id string that is somewhat based on the candidate's name. Of the 1043 rows, there are only 141 unique  `filerid` values. There are no missing values.
+ A unique candidate id string that is somewhat based on the candidate's name. Of the 1043 rows, there are only 141 unique  `filerid` values and no missing values.
  
  - `filertype`: *Indicates if this record is for a candidate* \
- Factor with a single level, `Candidate`, that contains no missing values.
+ A string with a single constant value, `"Candidate"`, and no missing values.
  
  - `filername`: *The candidate or committee name as reported on the candidates registration.* \
- Of the 1043 rows, there are only 134 unique  `filername` values. There are no missing values.
+ A string with with 134 unique values and no missing values.
  
  - `firstname`: *This field represents the first name, as reported by the filer* \
- There are no missing values.
+ A string with no missing values.
  
  - `middleinitial`: *This field represents the middle initial, as reported by the filer* \
- There are no missing values.
+ A string with no missing values.
  
  - `lastname`: *This field represents the last name, as reported by the filer* \
- There are no missing values.
+ A string with no missing values.
  
  - `office`: *The office sought by the candidate* \
- There are 16 unique `office` values present in the dataset (`GOVERNOR`, `STATE SENATOR`, `COUNTY SHERIFF`, etc.). There are no missing values.
+ A string with 16 unique values (`"GOVERNOR"`, `"STATE SENATOR"`, `"COUNTY SHERIFF"`, etc.) and no missing values.
  
  - `DUMMY`: \
  This is the placeholder column label that was introduced above in order to align the subsequent column labels with their data columns. There are 14 unique `DUMMY` values present in the dataset, and these 14 values are a proper subset of the 16 unique values present in the `office` variable described above.
  
  - `legislativedistrict`: *The Washington State legislative district* \
- This contains integer district identifiers ranging from 1 to 48 with 354 missing values.
+ An integer identifiying the legislative district ranging from 1 to 48 with 354 missing values.
  
  - `position`: *The position associated with an office* \
- This contains integers ranging from 1 to 40 with 574 missing values.
+ An integer identifying the office's position raning from 1 to 40 with 574 missing values.
  
  - `party`: *The political party as declared by the candidate on their registration* \
- This is a factor containing 4 levels: `DEMOCRAT`,  `REPUBLICAN`, `INDEPENDENT`, `NON PARTISAN`. There are 56 missing values.
+ A string with 4 unique values (`"DEMOCRAT"`,  `"REPUBLICAN"`, `"INDEPENDENT"`, and `"NON PARTISAN"`) and 56 missing values.
  
  - `jurisdiction`: *The political jurisdiction associated with the office of a candidate* \
- There are 51 unique `jurisdiction` values with values like `LEG DISTRICT 11 - SENATE`, `LEG DISTRICT 41 - HOUSE`, `SUPREME COURT`, etc. There are 56 missing values.
+ A string with 51 unique values (`"LEG DISTRICT 11 - SENATE"`, `"LEG DISTRICT 41 - HOUSE"`, `"SUPREME COURT"`, etc.) and 56 missing values.
  
  - `jurisdictioncounty`: *The county associated with the jurisdiction of a candidate* \
- There are 15 unique `jurisdictioncounty` values including `KING`, `PIERCE`, `SPOKANE`, etc.
- There are 56 missing values and an additional 215 empty values.
+ A string with 15 unique values (`"KING"`, `"PIERCE"`, `"SPOKANE"`, etc.).  There are also 56 missing values and an additional 215 empty values.
  
  - `jurisdictiontype`: *The type of jurisdiction this office is: Statewide, Local, etc* \
- There are 4 `jurisdictiontype` values: `Statewide`, `Legislative`, `Local`, and `Judicial`. There are 56 missing values
+ A string with 4 unique values (`"Statewide"`, `"Legislative"`, `"Local"`, and `"Judicial"`) and 56 missing values.
  
  - `electionyear`: *The election year in the case of candidates* \
- The election year is the repeated integer 2012, with 56 missing values.
+ An integer with the constant value 2012 and 56 missing values.
  
  - `amount`: *The amount of the debt incurred or order placed* \
- Floating point values representing the debt or spending incurred in dollars.
- Values range from 3.24 to 19000.00 and there are 56 missing values.
+ A floating point number representing the debt incurred or spending in dollars. Values range from 3.24 to 19000.00 and there are 56 missing values.
  
  - `recordtype`: *This field designates the item as a debt* \
-  Factor with a single level, `DEBT`, that also contains 56 missing values.
+ A string with a single unique value, `"DEBT"` and 56 missing values.
  
  - `fromdate`: *The start date of the period for the report on which this debt record was reported* \
- Dates that range from 2009-10-01 to 2012-08-01 with 56 missing values.
+ A Date that ranges from 2009-10-01 to 2012-08-01 with 56 missing values.
  
  - `thrudate`: *The end date of the period for the report on which this debt record was reported* \
- Dates that range from 2009-10-31 to 2012-08-31 with 56 missing values.
+ A Date that range from 2009-10-31 to 2012-08-31 with 56 missing values.
  
  - `debtdate`: *The date that the debt was incurred* \
- Dates that range from 2008-10-29 to 2012-08-31 with 56 missing values.
+ A Date that range from 2008-10-29 to 2012-08-31 with 56 missing values.
  
  - `code`: *The type of debt* \
- There are 3 unique purchase codes: `Operation and Overhead`, `Management Services`,
- and `Fundraising`. In addition, there are 56 missing values and 610 empty values.
+ A string with 3 unique values (`"Operation and Overhead"`, `"Management Services"`, and `"Fundraising"`). In addition, there are 56 missing values and 610 empty values.
 
  - `description`: *The reported description of the transaction* \
- There are 106 unique purhcase descriptions. There are 56 missing values and an additional 39 empty values.
+ A string with 106 unique values (`"YARD SIGNS"`, `"STAMPS`, `"AIRFARE"`, etc.), 56 missing values, and 39 empty values.
  
  - `vendorname`: *The name of the vendor or recipient’s name* \
- There are 75 unique values (e.g. `SEATTLE MEDIUM NEWSPAPER`, `IMPACT SIGNS`, `THE CONNECTIONS GROUP`, etc.), and 56 missing values.
+ A string with 75 unique values (`"SEATTLE MEDIUM NEWSPAPER"`, `"IMPACT SIGNS"`, `"THE CONNECTIONS GROUP"`, etc.) and 56 missing values.
  
  - `vendoraddress`: *The street address of the vendor or recipient* \
- There are 80 unique values (e.g. `PO BOX 650448`, `5810 COWAN PL NE`, `2600 S JACKSON ST`, etc.). There are 56 missing values and an additional 24 empty values.
+ A string with 80 unique values (e.g. `"PO BOX 650448"`, `"5810 COWAN PL NE"`, `"2600 S JACKSON ST"`, etc.), 56 missing values, and 24 empty values.
  
  - `vendorcity`: *The city of the vendor or recipient* \
- There are 30 unique values (e.g. `SAN JOSE`, `SEATTLE`, `TUMWATER`, etc.). There are 56 missing values and an additional 24 empty values.
+ A string with 30 unique values (`"SAN JOSE"`, `"SEATTLE"`, `"TUMWATER"`, etc.), 56 missing values, and 24 empty values.
  
  - `vendorstate`: *The state of the vendor or recipient* \
- There are 4 unique values: `WA`, `DC`, `TX`, `CA`. There are 56 missing values and an additional 25 empty values.
+ A string with 4 unique values (`"WA"`, `"DC"`, `"TX"`, and `"CA"`), 56 missing values, and 25 empty values.
 
 ### Examine row alignment
 Next, we examine select columns from the first row of the data set.
@@ -161,11 +145,11 @@ t(DebtShifted[1,c('filerid', 'filername', 'office', 'DUMMY', 'legislativedistric
                   'party', 'jurisdiction', 'jurisdictiontype')])
 ```
 
-Notice that the `office` column indicates that Cindy Ryu ran for `"STATE REPRESENTATIVE"`. The `jurisdiction` and `party` columns indicate that she ran for state senate as a Republican in district 1.  However, a quick wikipedia search shows that Cindy Ryu atually ran for state representative in 2012 as a Democrat in district 32.
+Notice that the `office` column indicates that a candidate named Cindy Ryu ran for `"STATE REPRESENTATIVE"`. The `party`, `jurisdiction`, and `legislativedistrict` columns indicate that she ran for state senate as a Republican in district 1.  However, a quick wikipedia search shows that Cindy Ryu atually ran for state representative in 2012 as a Democrat in district 32.
 
-After careful examination of many individual rows, we have concluded that the values for each row are self consistent from `reportnumber` through `office` (e.g. Candidate with `filername` of `"RYU CINDY S"` did run for the `office` of `"STATE REPRESENTATIVE"`), but they are inconsistent from `DUMMY` through `vendorstate` (Cindy Ryu did not have `party` of `"REPUBLICAN"` and run with `jurisdiction` of `"LEG DISTRICT 01 - SENATE"`).
+After careful examination of many individual rows, we have concluded that the values for each row are self consistent from `reportnumber` through `office` (e.g. Candidate with `filername` of `"RYU CINDY S"` did run for the `office` of `"STATE REPRESENTATIVE"`), but they are inconsistent from `DUMMY` through `vendorstate` (Cindy Ryu did not have `party` of `"REPUBLICAN"` and did not run for an office with a `jurisdiction` of `"LEG DISTRICT 01 - SENATE"`).
 
-The columns from `DUMMY` through `vendorstate` also exhibit peculiar repition and missing value behavior. All of these colums have 56 missing values, and they occur in the same 56 rows. In contrast, there are no missing values in the columns before ``DUMMY`. Also, there are many rows that have distinct values from `reportnumber` through `office` but identical values from `DUMMY` through `vendorstate`.
+The columns from `DUMMY` through `vendorstate` also exhibit peculiar repition and missing value behavior. All of these colums have 56 missing values, and they occur in the same 56 rows. In contrast, there are no missing values in any of the columns before ``DUMMY`. Also, there are many rows that have distinct values from `reportnumber` through `office` but identical values from `DUMMY` through `vendorstate`.
 
 Based on these missing value and repitition observations, and the need to introduce the `DUMMY` column in the first place, we speculate that this data set is actually the combination of two separate data sets that are improperly aligned, perhaps as the result of an errant SQL join.  We further conclude that there is not sufficient information available to realign these two data sets.
 
@@ -178,11 +162,11 @@ To move forward, we will define two new data sets
 DebtLeft = DebtShifted[, seq(9)]
 
 # Print out number of rows and columns
-print(sprintf("DebtLeft data set has %d columns and %d rows.", ncol(DebtLeft), nrow(DebtLeft)))
+print(sprintf("The DebtLeft data set has %d columns and %d rows.", ncol(DebtLeft), nrow(DebtLeft)))
 ```
 
 
- 2. `Debt` will include the unique, non-missing, rows for the columns from `DUMMY` through `vendorstate`. Additionally, we will rename `DUMMY` to `office` in `Debt`, since it has a nearly identical set of factor levels as `office` in `DebtLeft`, and seems to serve the same purpose.
+ 2. `Debt` will include the unique, non-missing, rows for the columns from `DUMMY` through `vendorstate`. Additionally, we will rename the `DUMMY` column to `office` since it has a nearly identical set of unique values as the `office` column in `DebtLeft`, and seems to serve the same purpose.
 
 ```{r}
 # Split off right table
@@ -198,7 +182,7 @@ DebtRightValid <- DebtRight[rowSums(!is.na(DebtRight)) > 0,]
 Debt <- unique(DebtRightValid)
 
 # Print number of rows and columns
-print(sprintf("Debt data set has %d columns and %d rows.", ncol(Debt), nrow(Debt)))
+print(sprintf("The Debt data set has %d columns and %d rows.", ncol(Debt), nrow(Debt)))
 ```
 
 While we will explore both `Debt` and `DebtLeft` in the analysis to follow, the `Debt` data set is of more utility to us because it contains `amount`, the target variable of this analysis.
